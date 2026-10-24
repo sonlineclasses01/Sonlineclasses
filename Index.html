@@ -1,0 +1,2300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonline Classes · Learn · Play · Shine</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+:root{
+  --bg:#fbf7ff;--card:#ffffff;--ink:#241a40;--mut:#6b6490;--line:#efe4ff;
+  --pri:#7c3aed;--pri2:#a855f7;--rose:#e11d48;--amber:#f59e0b;--green:#10b981;--blue:#0ea5e9;
+  --rain:linear-gradient(90deg,#f43f5e,#fb923c,#facc15,#22c55e,#0ea5e9,#8b5cf6,#ec4899);
+  --shadow:0 12px 34px rgba(80,30,150,.12);--r:18px;
+}
+body{
+  margin:0;color:var(--ink);min-height:100vh;overflow-x:hidden;
+  font:400 16px/1.6 Nunito,system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:
+    radial-gradient(900px 520px at 0% -8%,#ffe6f2 0,transparent 55%),
+    radial-gradient(900px 520px at 100% 0%,#e3f2ff 0,transparent 55%),
+    radial-gradient(800px 620px at 50% 112%,#eaffef 0,transparent 60%),
+    var(--bg);
+}
+h1,h2,h3,h4,b,strong,.logo,.brand-name,.tab,.btn,button{font-family:'Baloo 2',system-ui,sans-serif}
+h1,h2,h3{margin:.2em 0 .45em;line-height:1.2}
+p{margin:.4em 0}
+a{cursor:pointer;color:var(--pri);text-decoration:none}
+img{max-width:100%}
+.mut{color:var(--mut)}
+.small{font-size:.82rem}
+.center{text-align:center}
+.hidden{display:none!important}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  padding:10px 16px;color:#fff;background:linear-gradient(100deg,#3b0764,#6d28d9 45%,#c026d3 82%,#db2777);
+  box-shadow:0 6px 24px rgba(76,29,149,.28);border-bottom:4px solid var(--amber)}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.brand-logo{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font:800 26px 'Baloo 2';color:#fff;background:var(--rain);border:2px solid rgba(255,255,255,.35);
+  box-shadow:0 4px 14px rgba(0,0,0,.25);flex:none}
+.brand-name{font:800 1.18rem/1.1 'Baloo 2';letter-spacing:.3px}
+.brand-name small{display:block;font:400 .66rem/1.35 Nunito;opacity:.85;letter-spacing:.4px}
+.navlinks{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.nav{color:#fff;padding:7px 14px;border-radius:40px;font-weight:700;font-size:.92rem;transition:.2s}
+.nav:hover,.nav.on{background:rgba(255,255,255,.2)}
+.nav.gold{background:var(--amber);color:#3b2200}
+.nav.gold:hover{background:#fbbf24}
+.nav.ghost{background:rgba(255,255,255,.16)}
+.nav.out{background:#e11d48}
+.nav.out:hover{background:#be123c}
+
+main{max-width:1080px;margin:0 auto;padding:14px 14px 44px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;border-radius:26px;padding:22px 16px 30px;text-align:center;color:#fff;
+  background:linear-gradient(135deg,#4c1d95,#7c3aed 45%,#db2777);box-shadow:var(--shadow);
+  border-bottom:8px solid var(--amber);margin-bottom:6px;perspective:800px}
+.hero h1{font-size:clamp(24px,6vw,40px);margin:6px 0 8px;text-shadow:0 3px 0 rgba(0,0,0,.22)}
+.hero-sub{max-width:660px;margin:0 auto 16px;opacity:.96;font-size:1.02rem;position:relative;z-index:2}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2}
+.word{display:flex;justify-content:center;flex-wrap:wrap;gap:1px;position:relative;z-index:2;padding-top:6px}
+.logo{display:inline-block;font:800 clamp(34px,10vw,78px)/1 'Baloo 2';cursor:pointer;user-select:none;
+  text-shadow:0 5px 0 rgba(0,0,0,.22);animation:drop .95s cubic-bezier(.3,1.6,.5,1) both;
+  animation-delay:calc(var(--i) * .09s);transform-style:preserve-3d}
+.logo.b{animation:bounce .7s}
+@keyframes drop{0%{transform:translateY(-360px) rotate(-35deg) rotateX(40deg);opacity:0}60%{opacity:1}100%{transform:none;opacity:1}}
+@keyframes bounce{0%,100%{transform:none}40%{transform:translateY(-26px) rotate(8deg) rotateY(25deg) scale(1.18)}}
+.blob{position:absolute;border-radius:50%;filter:blur(8px);opacity:.35;pointer-events:none}
+.blob.b1{width:180px;height:180px;background:#facc15;top:-60px;left:-40px}
+.blob.b2{width:170px;height:170px;background:#22d3ee;bottom:-80px;right:-40px}
+.blob.b3{width:120px;height:120px;background:#f472b6;top:32%;right:9%}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;cursor:pointer;
+  border-radius:40px;padding:10px 18px;font:700 1rem 'Baloo 2';color:#fff;text-decoration:none;
+  background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 6px 16px rgba(124,58,237,.3);
+  transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(124,58,237,.36)}
+.btn.gold{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#3b2200;box-shadow:0 6px 16px rgba(245,158,11,.35)}
+.btn.ok{background:linear-gradient(135deg,#10b981,#34d399);box-shadow:0 6px 16px rgba(16,185,129,.32)}
+.btn.r{background:linear-gradient(135deg,#e11d48,#f43f5e);box-shadow:0 6px 16px rgba(225,29,72,.3)}
+.btn.o{background:#fff;color:var(--pri);border:2px solid var(--pri);box-shadow:none}
+.btn.ghost{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.55);box-shadow:none}
+.btn.sm{padding:6px 12px;font-size:.85rem}
+.btn.full{width:100%}
+
+/* ---------- cards / layout ---------- */
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin:12px 0;
+  box-shadow:var(--shadow);border-top:5px solid var(--line);transition:transform .18s,box-shadow .18s}
+.card h3{margin-top:0}
+.card.click{cursor:pointer}
+.card.click:hover{transform:translateY(-4px) rotateX(1deg);box-shadow:0 18px 40px rgba(80,30,150,.16)}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.stats{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+.stat{text-align:center}
+.stat .num{font:800 2rem/1.1 'Baloo 2';color:var(--pri);margin:4px 0}
+.stat .lbl{font-weight:800;font-size:.9rem}
+.stat .sub{font-size:.78rem;color:var(--mut);min-height:1.1em}
+.sec{font-size:1.5rem;margin:26px 0 2px}
+.note{background:#fff8e6;border:1px solid #fde68a;border-left:5px solid var(--amber);
+  padding:12px 14px;border-radius:14px;margin:12px 0;line-height:1.55}
+.rowline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 0;border-bottom:1px dashed var(--line)}
+.rowline:last-child{border-bottom:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border:2px solid #e9d5ff;background:#faf5ff;
+  border-radius:40px;padding:4px 12px;font-weight:700;font-size:.85rem}
+.chip small{font-weight:400;color:var(--mut)}
+.badge{display:inline-block;border-radius:40px;padding:2px 12px;font:700 .78rem Nunito;
+  background:#f3e8ff;color:#6b21a8}
+.badge.ok{background:#d1fae5;color:#065f46}
+.badge.warn{background:#fef3c7;color:#92400e}
+.badge.bad{background:#ffe4e6;color:#9f1239}
+.badge.big{background:#fde68a;color:#713f12;font-size:.95rem;padding:6px 16px}
+
+/* ---------- forms ---------- */
+.fg{margin:10px 0}
+.fg label{display:block;font-weight:800;font-size:.9rem;margin-bottom:4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;
+  border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--pri);
+  box-shadow:0 0 0 4px rgba(124,58,237,.14)}
+textarea{min-height:120px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;line-height:1.5}
+input[type=file]{padding:8px;border-radius:14px}
+.fgrid{display:grid;gap:0 14px;grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:14px;
+  padding:10px 12px;margin:8px 0;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#c4b5fd}
+.opt:has(input:checked){border-color:var(--pri);background:#f7f2ff}
+.opt input{width:auto;margin-top:4px;accent-color:var(--pri)}
+.qbox{background:#fbf8ff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;margin:12px 0}
+.panel{max-width:470px;margin:22px auto;background:#fff;border-radius:22px;padding:26px 22px;
+  box-shadow:0 22px 60px rgba(80,30,150,.16);border-top:6px solid var(--pri)}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;border-radius:14px}
+table.tbl{width:100%;border-collapse:collapse;font-size:.92rem}
+table.tbl th{background:#f6f0ff;color:#4c1d95;text-align:left;padding:9px;
+  font-size:.78rem;text-transform:uppercase;letter-spacing:.4px}
+table.tbl td{padding:9px;border-bottom:1px solid #f3ecff;vertical-align:top}
+table.tbl tr:last-child td{border-bottom:0}
+
+/* ---------- tabs / banner ---------- */
+.banner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  border-radius:var(--r);padding:18px 20px;color:#fff;margin:6px 0 4px;
+  background:linear-gradient(120deg,#4c1d95,#7c3aed 50%,#c026d3);box-shadow:var(--shadow)}
+.banner h2{margin:0;font-size:1.5rem}
+.banner p{margin:2px 0 0;opacity:.92;font-size:.9rem}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 6px;scrollbar-width:thin}
+.tab{border:0;cursor:pointer;white-space:nowrap;border-radius:40px;padding:9px 15px;
+  font:700 .9rem 'Baloo 2';background:#fff;color:var(--pri);
+  box-shadow:0 4px 14px rgba(80,30,150,.1);transition:.18s}
+.tab:hover{transform:translateY(-2px)}
+.tab.on{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff}
+
+/* ---------- live ---------- */
+.live-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;padding:13px 18px;
+  border-radius:18px;color:#fff;background:linear-gradient(120deg,#e11d48,#f97316);
+  box-shadow:0 10px 26px rgba(225,29,72,.32);animation:pulse 1.9s infinite}
+.live-banner .dot{width:12px;height:12px;border-radius:50%;background:#fff;animation:ping 1.4s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(255,255,255,.85)}100%{box-shadow:0 0 0 13px rgba(255,255,255,0)}}
+@keyframes pulse{50%{transform:scale(1.008)}}
+.live-card{background:linear-gradient(135deg,#fff1f2,#fff7ed);border-top:5px solid var(--rose)}
+
+/* ---------- calendar ---------- */
+.calhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;margin-top:12px}
+.cal .ch{font-weight:800;color:var(--mut);font-size:.78rem;padding:4px 0}
+.cal .cd{padding:9px 0;border-radius:12px;cursor:pointer;border:2px solid transparent;
+  font-weight:700;font-size:.9rem;transition:.15s}
+.cal .cd:hover{background:#f6f0ff;transform:scale(1.06)}
+.cal .cd.has{background:linear-gradient(135deg,#ede9fe,#fce7f3);color:#6b21a8}
+.cal .cd.sel{border-color:var(--pri);background:#fff;color:var(--pri)}
+.legend{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--mut);margin-top:10px}
+.legend i{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,#ede9fe,#fce7f3);display:inline-block}
+
+/* ---------- misc ---------- */
+.frame{width:100%;height:70vh;border:2px solid var(--line);border-radius:16px;background:#fff}
+.profile-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.photo{width:112px;height:132px;border-radius:16px;background:#f6f0ff;border:3px solid var(--amber);
+  display:flex;align-items:center;justify-content:center;font-size:2.6rem;overflow:hidden;flex:none}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.pgrid div{border-bottom:1px solid #f3ecff;padding-bottom:6px}
+.pgrid span{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--mut)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:300;
+  display:flex;gap:10px;align-items:center;padding:12px 20px;border-radius:40px;
+  background:#241a40;color:#fff;font-weight:700;box-shadow:0 16px 44px rgba(0,0,0,.32);
+  border-left:6px solid var(--amber);max-width:92vw}
+.toast.hidden{display:none}
+.back{position:fixed;inset:0;background:rgba(36,26,64,.58);z-index:200;display:flex;
+  justify-content:center;align-items:flex-start;padding:4vh 12px;overflow:auto}
+.modal{background:#fff;border-radius:20px;max-width:720px;width:100%;padding:20px;position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.4);transform:perspective(900px) rotateX(2deg)}
+.modal .x{position:absolute;top:10px;right:12px;border:0;background:#f6f0ff;color:var(--pri);
+  border-radius:50%;width:34px;height:34px;font-size:1.05rem;cursor:pointer;font-weight:800}
+footer{background:linear-gradient(100deg,#3b0764,#6d28d9);color:#fff;text-align:center;
+  padding:20px 16px;border-top:4px solid var(--amber);font-size:.9rem}
+footer .f2{color:#c4b5fd;font-size:.8rem;margin-top:4px}
+
+/* birthday celebration */
+.birthday-card{background:linear-gradient(135deg,#fef3c7,#fde68a,#fca5a5);border:2px dashed var(--rose);
+  animation:birthdayGlow 2s ease-in-out infinite alternate}
+@keyframes birthdayGlow{from{box-shadow:0 0 0 rgba(225,29,72,.2)}to{box-shadow:0 0 30px rgba(225,29,72,.6)}}
+.birthday-card h3{color:#9f1239}
+
+@media(max-width:640px){
+  .topbar{padding:8px 12px}
+  .brand-name{font-size:1rem}
+  .brand-logo{width:40px;height:40px;font-size:22px}
+  main{padding:10px 10px 40px}
+  .hero{border-radius:20px;padding:18px 12px 26px}
+  .btn{padding:9px 15px;font-size:.95rem}
+  .card{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand" data-page="home">
+    <span class="brand-logo">S</span>
+    <span class="brand-name">Sonline Classes<small>samson online classes · learn · play · shine</small></span>
+  </div>
+  <nav class="navlinks" id="nav"></nav>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  <div id="foot"></div>
+  <div class="f2">Learn · Play · Shine — 100% online, Grade 1 to Grade 12</div>
+</footer>
+
+<div id="toast" class="toast hidden"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* =========================================================================
+   CONFIG & CONSTANTS
+   ========================================================================= */
+const COL=['#f43f5e','#fb923c','#facc15','#22c55e','#0ea5e9','#8b5cf6','#ec4899'];
+const WORD='SONLINE';
+const CLASSES=Array.from({length:12},(_,i)=>'Grade '+(i+1));
+const SUBJECTS=['Mathematics','English Language','Basic Science','Physics','Chemistry','Biology',
+  'Economics','Government','Literature','Computer Science','Civic Education','Geography',
+  'Further Mathematics','French','Creative Arts'];
+const MAX_MB=20;
+
+const DEF={
+  links:[
+    {n:'Zoom Class 1',u:'https://us05web.zoom.us/j/4376132456?pwd=w9eNP5rtietTKIjwRnrDjBqyW8uYyX.1'},
+    {n:'Zoom Class 2',u:'https://us05web.zoom.us/j/6363046070?pwd=8zIHQdXFNsde7CnOZLurQBeYWAyA2E.1'},
+    {n:'Google Meet (code: pef-nopp-fmz)',u:'https://meet.google.com/pef-nopp-fmz'}
+  ],
+  email:'sonlineclasses01@gmail.com',
+  phones:['+2347037607137','+2348059790392'],
+  teacherCode:'SONLINE-TEACH',
+  adminCode:'SONLINE-ADMIN',
+  mainAdminEmail:'sonlineclasses01@gmail.com',
+  whatsapp:'2347037607137',                       // WhatsApp line used by wa.me (country code, no + or spaces)
+  formEndpoint:'https://formspree.io/f/mzeepooo', // Formspree: delivers every contact message to your email
+  supabaseUrl:'https://pvqpvjrpkreeywkfjwqh.supabase.co',                                 // e.g. https://abcdxyz.supabase.co  (paste yours here or in Admin > Settings)
+  supabaseKey:'sb_publishable_Fn0pooITxYXR5gagWnOsuQ_QCQHtI7w'                                  // Supabase "anon public" key
+};
+
+/* =========================================================================
+   STORAGE
+   ========================================================================= */
+function LSget(k,d){try{const v=JSON.parse(localStorage.getItem('son_'+k));return v==null?(d===undefined?[]:d):v}catch(e){return d===undefined?[]:d}}
+function LSset(k,v){try{localStorage.setItem('son_'+k,JSON.stringify(v))}catch(e){}}
+
+let cfg=Object.assign({},DEF,LSget('settings',{}));
+// persist config changes
+function saveCfg(){LSset('settings',cfg)}
+['formEndpoint','whatsapp','supabaseUrl','supabaseKey'].forEach(k=>{if(!cfg[k])cfg[k]=DEF[k]});
+
+/* Supabase (plain REST, no library needed). Only active once URL + key are filled in. */
+const sbOn=()=>/^https:\/\/.+/.test(String(cfg.supabaseUrl||''))&&!!String(cfg.supabaseKey||'').trim();
+async function sbInsert(table,row){
+  if(!sbOn())return false;
+  try{
+    const r=await fetch(String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/'+table,{
+      method:'POST',
+      headers:{'apikey':cfg.supabaseKey,'Authorization':'Bearer '+cfg.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(row)});
+    return r.ok;
+  }catch(e){return false}
+}
+const waNum=()=>String(cfg.whatsapp||(cfg.phones&&cfg.phones[0])||'').replace(/\D/g,'');
+
+const users=()=>LSget('users'),        saveUsers=v=>LSset('users',v);
+const assignments=()=>LSget('assignments'), saveAssignments=v=>LSset('assignments',v);
+const subs=()=>LSget('subs'),          saveSubs=v=>LSset('subs',v);
+const events=()=>LSget('events'),      saveEvents=v=>LSset('events',v);
+const news=()=>LSget('news'),          saveNews=v=>LSset('news',v);
+const resources=()=>LSget('resources'),saveResources=v=>LSset('resources',v);
+const grades=()=>LSget('grades'),      saveGrades=v=>LSset('grades',v);
+const lessons=()=>LSget('lessons'),    saveLessons=v=>LSset('lessons',v);
+const messages=()=>LSget('messages'),  saveMessages=v=>LSset('messages',v);
+
+/* =========================================================================
+   SMALL HELPERS
+   ========================================================================= */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const cap=s=>String(s||'').charAt(0).toUpperCase()+String(s||'').slice(1);
+const pad=n=>String(n).padStart(2,'0');
+const dayKey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const todayKey=()=>dayKey(new Date());
+const fmtDate=d=>{if(!d)return '—';const x=new Date(d);return isNaN(x)?'—':x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})};
+const fmtDT=d=>{const x=new Date(d);return x.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' · '+x.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+const fmtTime=d=>new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const opts=(arr,sel)=>arr.map(x=>`<option ${x===sel?'selected':''}>${esc(x)}</option>`).join('');
+const fmtSize=n=>n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
+const gradeOf=t=>t>=70?['A','Excellent']:t>=60?['B','Very good']:t>=50?['C','Good']:t>=45?['D','Fair']:t>=40?['E','Pass']:['F','Fail'];
+
+// birthday helpers
+function isBirthdayToday(dob){
+  if(!dob)return false;
+  const d=new Date(dob),now=new Date();
+  return d.getDate()===now.getDate()&&d.getMonth()===now.getMonth();
+}
+function birthdaySoon(dob,days=14){
+  if(!dob)return false;
+  const d=new Date(dob),now=new Date();
+  const thisYear=new Date(now.getFullYear(),d.getMonth(),d.getDate());
+  const diff=(thisYear-now)/86400000;
+  if(diff>=0&&diff<=days)return true;
+  if(diff<0){ // check next year
+    const next=new Date(now.getFullYear()+1,d.getMonth(),d.getDate());
+    return (next-now)/86400000<=days;
+  }
+  return false;
+}
+
+/* =========================================================================
+   SESSION
+   ========================================================================= */
+const me=()=>{const s=LSget('session',null);return s?users().find(u=>u.email===s.email)||null:null};
+const getUser=e=>users().find(u=>u.email===e);
+const isStaff=u=>!!u&&(u.role==='teacher'||u.role==='admin');
+const isMainAdmin=u=>u&&u.email===cfg.mainAdminEmail;
+async function pwHash(email,pw){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('sonline|'+String(email).toLowerCase()+'|'+pw));return 'h1:'+[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function pwOk(u,pw){return u.password&&String(u.password).startsWith('h1:')?u.password===await pwHash(u.email,pw):u.password===pw}
+function updateUser(email,fn){
+  const all=users();const u=all.find(x=>x.email===email);
+  if(u){fn(u);saveUsers(all)}
+}
+
+/* =========================================================================
+   FILE STORAGE (IndexedDB)
+   ========================================================================= */
+let _db;
+function idb(){
+  return _db||(_db=new Promise((res,rej)=>{
+    if(!window.indexedDB){_db=null;return rej(new Error('IndexedDB unavailable'))}
+    // open WITHOUT forcing a version so an existing newer database (version 2+) still works
+    const open=v=>{
+      const r=v?indexedDB.open('sonline_files',v):indexedDB.open('sonline_files');
+      r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('files'))r.result.createObjectStore('files',{keyPath:'id'})};
+      r.onsuccess=()=>{
+        const d=r.result;
+        if(!d.objectStoreNames.contains('files')){const nv=d.version+1;d.close();open(nv);return}
+        d.onversionchange=()=>{d.close();_db=null};
+        res(d);
+      };
+      r.onerror=()=>{_db=null;rej(r.error)};
+    };
+    open();
+  }));
+}
+async function putFile(file){
+  const id=uid();const d=await idb();
+  await new Promise((res,rej)=>{
+    const t=d.transaction('files','readwrite');
+    t.objectStore('files').put({id,name:file.name,type:file.type,blob:file});
+    t.oncomplete=res;t.onerror=()=>rej(t.error);
+  });
+  return {id,name:file.name,type:file.type||'',size:file.size};
+}
+async function getFile(id){
+  const d=await idb();
+  return new Promise((res,rej)=>{
+    const q=d.transaction('files').objectStore('files').get(id);
+    q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);
+  });
+}
+async function delFiles(metas){
+  try{
+    const d=await idb();
+    (metas||[]).forEach(m=>{d.transaction('files','readwrite').objectStore('files').delete(m.id)});
+  }catch(e){}
+}
+async function saveFiles(fileList,imagesOnly){
+  const out=[];
+  for(const f of Array.from(fileList||[])){
+    if(f.size>MAX_MB*1048576){toast(f.name+' is larger than '+MAX_MB+' MB.',true);return null}
+    if(imagesOnly&&!f.type.startsWith('image/')){toast('Please choose an image file.',true);return null}
+    try{out.push(await putFile(f))}catch(e){toast('Could not store file: '+e.message,true);return null}
+  }
+  return out;
+}
+const EXT_TYPES={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',
+  webp:'image/webp',txt:'text/plain',html:'text/html',htm:'text/html',mp4:'video/mp4',mp3:'audio/mpeg'};
+const guessType=(t,n)=>t||EXT_TYPES[((n||'').split('.').pop()||'').toLowerCase()]||'application/octet-stream';
+const VIEWABLE=/^(application\/pdf|image\/(png|jpe?g|gif|webp|bmp)|text\/(plain|html)|audio\/|video\/)/;
+
+async function openFile(id,type,name,forceDownload){
+  type=guessType(type,name);
+  if(/^text\/html/.test(type)&&!forceDownload){
+    try{const rec=await getFile(id);if(!rec){toast('File not found on this device.',true);return}
+      const t=await new Response(rec.blob).text();
+      showModal(`<h3>${esc(name)}</h3><iframe class="frame" sandbox="allow-scripts allow-forms allow-modals" srcdoc="${esc(t)}"></iframe>`)}
+    catch(err){toast('Could not open file.',true)}
+    return;
+  }
+  const viewable=VIEWABLE.test(type)&&!forceDownload;
+  let w=null;
+  if(viewable){
+    w=window.open('','_blank');
+    if(!w){toast('Pop-up blocked. Allow pop-ups for this page and try again.',true);return}
+  }
+  try{
+    const rec=await getFile(id);
+    if(!rec){if(w)w.close();toast('File not found on this device.',true);return}
+    const url=URL.createObjectURL(new Blob([rec.blob],{type}));
+    if(viewable){w.location.href=url}
+    else{
+      const a=document.createElement('a');
+      a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+      toast('Downloading '+name);
+    }
+    setTimeout(()=>URL.revokeObjectURL(url),180000);
+  }catch(e){if(w)w.close();toast('Could not open file.',true)}
+}
+const fileIcon=n=>{
+  const e=((n||'').split('.').pop()||'').toLowerCase();
+  return e==='pdf'?'📕':/png|jpe?g|gif|webp/.test(e)?'🖼️':/docx?/.test(e)?'📘':
+    /xlsx?|csv/.test(e)?'📗':/pptx?/.test(e)?'📙':/zip|rar/.test(e)?'🗜️':
+    /html?/.test(e)?'🌐':'📄';
+};
+function fileBtns(files){
+  if(!files||!files.length)return '<span class="mut small">No file attached</span>';
+  return files.map(f=>`<span class="chip">${fileIcon(f.name)} ${esc(f.name)} <small>${fmtSize(f.size)}</small>
+    <button type="button" class="btn sm o" data-act="open" data-fid="${f.id}" data-type="${esc(f.type)}" data-name="${esc(f.name)}">Open</button>
+    <button type="button" class="btn sm" data-act="download" data-fid="${f.id}" data-type="${esc(f.type)}" data-name="${esc(f.name)}">⬇</button>
+  </span>`).join(' ');
+}
+const urlCache={};
+async function hydrate(root){
+  for(const img of $$('img[data-fid]',root||document)){
+    const id=img.dataset.fid;
+    if(urlCache[id]){img.src=urlCache[id];continue}
+    try{const r=await getFile(id);if(r){urlCache[id]=URL.createObjectURL(r.blob);img.src=urlCache[id]}}catch(e){}
+  }
+}
+
+/* =========================================================================
+   TOAST + MODAL
+   ========================================================================= */
+let toastTimer;
+function toast(msg,isError){
+  const t=$('#toast');
+  t.innerHTML=`<span>${isError?'⚠️':'✅'}</span><span>${esc(msg)}</span>`;
+  t.style.borderLeftColor=isError?'#e11d48':'var(--amber)';
+  t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.add('hidden'),4200);
+}
+function showModal(html){
+  $('#modalRoot').innerHTML=`<div class="back" data-act="close-modal-bg">
+    <div class="modal"><button class="x" data-act="close-modal" type="button">✕</button>${html}</div></div>`;
+  hydrate($('#modalRoot'));
+}
+const closeModal=()=>{$('#modalRoot').innerHTML=''};
+
+/* =========================================================================
+   DOMAIN HELPERS
+   ========================================================================= */
+const classAssignments=cls=>assignments().filter(a=>a.cls==='All Classes'||a.cls===cls);
+const subOf=(aid,email)=>subs().find(s=>s.aid===aid&&s.email===email);
+/* ---- score bridge: lets any uploaded HTML test or game send its score back to the site ---- */
+function __bridgeHead(){
+  try{localStorage.getItem('x')}catch(e){var m={};try{Object.defineProperty(window,'localStorage',{value:{getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}}}})}catch(_){}}
+  window.Sonline=window.SONLINE={submit:function(score,total,details){parent.postMessage({sonline:1,type:'score',score:+score,total:+total,details:String(details||'').slice(0,500)},'*')}};
+  window.submitScore=window.Sonline.submit;
+}
+function __bridgeBar(){
+  function find(){
+    try{if(typeof window.getScore==='function'){var r=window.getScore();if(r&&+r.total>0)return[+r.score,+r.total]}}catch(e){}
+    var t=document.body?document.body.innerText:'';
+    var m=t.match(/(?:score|result|marks?|you (?:got|scored))[^0-9\n]{0,20}(\d+(?:\.\d+)?)\s*(?:\/|out of|of)\s*(\d+)/i)||t.match(/(\d+(?:\.\d+)?)\s*(?:\/|out of)\s*(\d+)/);
+    return m?[+m[1],+m[2]]:null;
+  }
+  var b=document.createElement('div');
+  b.style.cssText='position:fixed;left:0;right:0;bottom:0;background:#0a2f44;color:#fff;padding:8px;text-align:center;z-index:2147483647;font:700 14px sans-serif';
+  var btn=document.createElement('button');btn.textContent='\uD83D\uDCE8 Send my score to my teacher';
+  btn.style.cssText='background:#d4a13e;color:#1a2a3e;border:0;border-radius:30px;padding:9px 18px;font:700 14px sans-serif;cursor:pointer';
+  b.appendChild(btn);(document.body||document.documentElement).appendChild(b);
+  if(document.body)document.body.style.paddingBottom='60px';
+  window.addEventListener('message',function(e){if(e.data&&e.data.sonlineAsk)btn.onclick()});
+  btn.onclick=function(){var r=find();if(!r){alert('Finish the test first so your score shows on the page (for example Score: 8/10), then press this button.');return}
+    parent.postMessage({sonline:1,type:'score',score:r[0],total:r[1],details:(document.body.innerText||'').slice(0,500)},'*')};
+}
+function withBridge(h){return '<script>('+__bridgeHead.toString()+')();<\/script>'+String(h==null?'':h)+'<script>('+__bridgeBar.toString()+')();<\/script>'}
+const isLes=x=>String(x.aid).startsWith('les:');
+const subTitle=x=>{if(isLes(x)){const l=lessons().find(y=>y.id===x.aid.slice(4));return (x.kind==='game'?'🎮 ':'📚 ')+(l?l.title:(x.title||'Deleted lesson'))}const a=assignments().find(y=>y.id===x.aid);return a?a.title:'Deleted assignment'};
+const subOut=x=>{if(isLes(x))return x.score+'/'+x.total;const a=assignments().find(y=>y.id===x.aid);return x.score+(a?'/'+a.marks:'')};
+const subMax=x=>{if(isLes(x))return Number(x.total)||0;const a=assignments().find(y=>y.id===x.aid);return a?Number(a.marks)||0:0};
+const scoreTotals=email=>{const m=subs().filter(x=>x.email===email&&x.score!=null);const e=m.reduce((t,x)=>t+Number(x.score),0),p=m.reduce((t,x)=>t+subMax(x),0);return{n:m.length,earned:Math.round(e*100)/100,possible:p,pct:p?Math.round(e/p*100):null}};
+const avgScore=email=>{
+  const g=grades().filter(x=>x.email===email);
+  return g.length?Math.round(g.reduce((a,x)=>a+Number(x.score),0)/g.length):null;
+};
+const liveNow=()=>{const n=Date.now();return events().filter(e=>n>=e.start-10*60000&&n<=e.start+e.mins*60000)};
+const upcoming=(k=6)=>{const t=Date.now();return events().filter(e=>e.start+e.mins*60000>=t).sort((a,b)=>a.start-b.start).slice(0,k)};
+const audienceOk=(n,role)=>role==='admin'||n.audience==='all'||n.audience===role;
+
+function stat(icon,label,num,sub){
+  return `<div class="card stat"><div class="lbl">${icon} ${label}</div><div class="num">${num}</div><div class="sub">${sub||''}</div></div>`;
+}
+function newsItem(n){
+  return `<div class="rowline"><div style="flex:1;min-width:200px">
+    <b>${esc(n.title)}</b> <span class="badge">${n.audience==='all'?'Everyone':cap(n.audience)+'s'}</span>
+    <div class="mut small">${esc(n.author||'')} · ${fmtDate(n.date)}</div>
+    <div>${esc(n.body)}</div></div></div>`;
+}
+
+/* =========================================================================
+   APP STATE
+   ========================================================================= */
+const state={page:'home',tab:'overview',authMode:'login',child:null,cls:'Grade 1',
+  dirCls:'all',calD:new Date(),selD:null,cur:null,edit:false};
+
+/* =========================================================================
+   NAV + RENDER
+   ========================================================================= */
+function navHTML(u){
+  const L=(p,l,c='')=>`<a class="nav ${state.page===p?'on':''} ${c}" data-page="${p}">${l}</a>`;
+  return `${L('home','🏠 Home')}${L('about','ℹ️ About')}${L('contact','📞 Contact')}
+    ${u?`${L('dashboard','📊 Dashboard')}<a class="nav out" data-act="logout">Logout</a>`
+       :`${L('auth','🔑 Login','gold')}<a class="nav ghost" data-act="go-register">📝 Register</a>`}`;
+}
+
+function render(){
+  const u=me();
+  const _ot=document.querySelector('.tabs'),_sl=_ot?_ot.scrollLeft:0;
+  if(state.page==='dashboard'&&!u)state.page='home';
+  $('#nav').innerHTML=navHTML(u);
+
+  let html='';
+  try{
+    if(state.page==='home')html=homeHTML(u);
+    else if(state.page==='about')html=aboutHTML();
+    else if(state.page==='contact')html=contactHTML();
+    else if(state.page==='auth')html=authHTML();
+    else html=dashHTML(u);
+  }catch(e){console.error(e);html='<div class="card"><p>Something went wrong rendering this page.</p></div>'}
+
+  $('#app').innerHTML=html;
+
+  const rr=$('#regRole');if(rr)CH.regrole(rr);
+  const ks=$('#kindSel');if(ks)CH.assignkind(ks);
+
+  hydrate($('#app'));
+  const _t=document.querySelector('.tabs');
+  if(_t){_t.scrollLeft=_sl;const on=_t.querySelector('.tab.on');
+    if(on){const r=on.getBoundingClientRect(),tr=_t.getBoundingClientRect();
+      if(r.left<tr.left)_t.scrollLeft-=(tr.left-r.left)+12;else if(r.right>tr.right)_t.scrollLeft+=(r.right-tr.right)+12}}
+}
+
+function go(p){
+  state.page=p;state.cur=null;state.edit=false;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* =========================================================================
+   PAGE: HOME
+   ========================================================================= */
+function homeHTML(u){
+  const live=liveNow();
+  const latest=news().filter(n=>n.audience==='all').slice(0,3);
+  const portals=[
+    ['👑','Admin','Manage users, lessons, results, announcements and the timetable.','full access'],
+    ['🧑‍🏫','Teacher','Upload lessons and games, set tasks and exams, schedule live classes and mark work.','upload & grade'],
+    ['🎓','Student','Join live lessons, play games, submit tasks and exams, and see your results.','learn & submit'],
+    ['👨‍👩‍👧','Parent','Follow your child’s results, tasks and the lesson timetable.','view only']
+  ];
+  const why=[
+    ['💻','Digital lessons','Interactive lessons and games that open right inside the portal.'],
+    ['🔴','Live classes','Join a Zoom or Google Meet lesson with one tap when it starts.'],
+    ['⭐','Instant results','CBT exams are marked the moment you submit. Teacher feedback follows.'],
+    ['📅','Clear timetable','Every lesson is on the class calendar, so nobody misses a thing.']
+  ];
+  return `
+  <div class="hero">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+    <div class="word">${[...WORD].map((c,i)=>`<span class="logo" style="--i:${i};color:${COL[i%COL.length]}" data-act="bounce">${c}</span>`).join('')}</div>
+    <h1>Sonline Classes</h1>
+    <p class="hero-sub">Live online lessons, interactive games, digital tasks and exams for learners in <b>Grade 1 to Grade 12</b> — at home or anywhere in the world.</p>
+    <div class="hero-btns">
+      ${u?`<button class="btn gold" data-page="dashboard">🚀 Open my dashboard</button>`
+         :`<button class="btn gold" data-act="go-register">📝 Register to join</button>
+           <button class="btn ghost" data-page="auth">🔑 Portal login</button>`}
+      <button class="btn ghost" data-page="contact">📞 Talk to us</button>
+    </div>
+  </div>
+
+  ${live.length?`<div class="live-banner"><span class="dot"></span>
+      <b>LIVE NOW:</b> ${live.map(e=>esc(e.title)).join(' · ')}
+      <button class="btn sm gold" data-page="dashboard">Join</button></div>`:''}
+
+  <h2 class="sec">Choose your portal</h2>
+  <p class="mut">Everyone gets a dashboard built for their role.</p>
+  <div class="grid">
+    ${portals.map(p=>`<div class="card click" data-act="portal">
+      <h3>${p[0]} ${p[1]}</h3><p>${p[2]}</p><span class="badge">${p[3]}</span></div>`).join('')}
+  </div>
+
+  <h2 class="sec">Why Sonline</h2>
+  <div class="grid">
+    ${why.map(w=>`<div class="card"><h3>${w[0]} ${w[1]}</h3><p>${w[2]}</p></div>`).join('')}
+  </div>
+
+  <h2 class="sec">Classes we teach</h2>
+  <div class="card">
+    <div class="chips">
+      ${CLASSES.map((c,i)=>`<span class="chip" style="border-color:${COL[i%7]};background:${COL[i%7]}1a;color:${COL[i%7]}">${c}</span>`).join('')}
+    </div>
+    <p class="mut small" style="margin-top:10px">Nigerian and Cambridge curricula · all lessons are 100% online.</p>
+  </div>
+
+  ${latest.length?`<h2 class="sec">Latest announcements</h2>
+    <div class="grid">${latest.map(n=>`<div class="card">
+      <h3>📢 ${esc(n.title)}</h3><p>${esc(n.body)}</p>
+      <p class="mut small">${fmtDate(n.date)}</p></div>`).join('')}</div>`:''}
+
+  <div class="card">
+    <h3>☎ Contact us</h3>
+    <p>✉ <b>${esc(cfg.email)}</b></p>
+    <p>${cfg.phones.map(p=>`📞 <b>${esc(p)}</b>`).join(' · ')}</p>
+    <button class="btn sm" data-page="contact">Send a message</button>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: ABOUT
+   ========================================================================= */
+function aboutHTML(){
+  return `
+  <div class="card">
+    <h2>About Sonline Classes</h2>
+    <p>Sonline (Samson Online Classes) is a <b>100% online school</b> for learners from
+    <b>Grade 1 to Grade 12</b>, following the Nigerian and Cambridge curricula. Lessons are live and
+    interactive, taught by experienced teachers, with digital tasks, CBT exams and learning games
+    that make ideas stick.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card"><h3>🎯 Mission</h3><p>To make learning active, clear and enjoyable for every learner, wherever they are.</p></div>
+    <div class="card"><h3>👁️ Vision</h3><p>Confident learners who succeed in school and beyond, in any country in the world.</p></div>
+    <div class="card"><h3>💎 Values</h3><p>Excellence · Integrity · Curiosity · Respect · Service.</p></div>
+  </div>
+
+  <div class="card">
+    <h3>How it works</h3>
+    <ol style="line-height:1.9;padding-left:20px">
+      <li><b>Register</b> an account as a student or parent.</li>
+      <li><b>Join</b> live lessons on Zoom or Google Meet from your dashboard.</li>
+      <li><b>Learn and play</b> with interactive lessons and games.</li>
+      <li><b>Submit</b> your tasks and CBT exams online.</li>
+      <li><b>See results</b> and teacher feedback in your portal.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Classes we teach</h3>
+    <div class="chips">
+      ${CLASSES.map((c,i)=>`<span class="chip" style="border-color:${COL[i%7]};background:${COL[i%7]}1a;color:${COL[i%7]}">${c}</span>`).join('')}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Subjects</h3>
+    <div class="chips">${SUBJECTS.map((s,i)=>`<span class="chip">${esc(s)}</span>`).join('')}</div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: CONTACT
+   ========================================================================= */
+function contactHTML(){
+  return `
+  <h2>☎ Contact Sonline Classes</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Send us a message</h3>
+      <p class="mut small">We reply as soon as we can.</p>
+      <form data-form="contact">
+        <div class="fg"><label>Your name</label><input name="name" required></div>
+        <div class="fg"><label>Email</label><input type="email" name="email" required></div>
+        <div class="fg"><label>Subject</label><input name="subject" required></div>
+        <div class="fg"><label>Message</label><textarea name="body" required style="min-height:110px"></textarea></div>
+        <button class="btn" type="submit">📨 Send message</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Reach us directly</h3>
+      <p>✉ <a href="mailto:${esc(cfg.email)}"><b>${esc(cfg.email)}</b></a></p>
+      ${cfg.phones.map(p=>`<div class="rowline">
+        <b>📞 ${esc(p)}</b>
+        <a class="btn sm ok" href="https://wa.me/${p.replace(/\D/g,'')}?text=${encodeURIComponent('Hello Sonline Classes, I need help.')}" target="_blank" rel="noopener">WhatsApp</a>
+      </div>`).join('')}
+      <div class="note">Office hours: Monday to Friday, 8:00am – 6:00pm.</div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: AUTH
+   ========================================================================= */
+function authHTML(){
+  return `<div class="panel">${state.authMode==='register'?registerForm():loginForm()}</div>`;
+}
+function loginForm(){
+  return `
+  <h2>🔑 Sign in</h2>
+  <p class="mut small">Welcome back to Sonline Classes.</p>
+  <form data-form="login">
+    <div class="fg"><label>Email</label><input type="email" name="email" required placeholder="you@example.com"></div>
+    <div class="fg"><label>Password</label><input type="password" name="password" required placeholder="••••••••"></div>
+    <button class="btn full" type="submit" style="margin-top:6px">Login</button>
+  </form>
+  <p class="mut center" style="margin-top:14px">New here? <a data-act="go-register"><b>Create an account</b></a></p>`;
+}
+function registerForm(){
+  return `
+  <h2>📝 Create your account</h2>
+  <p class="mut small">All fields are required.</p>
+  <form data-form="register">
+    <div class="fg"><label>Full name</label><input name="fullname" required></div>
+    <div class="fg"><label>Email</label><input type="email" name="email" required></div>
+    <div class="fg"><label>Password (min 6 characters)</label><input type="password" name="password" minlength="6" required></div>
+    <div class="fg"><label>Phone (with country code)</label><input name="phone" required placeholder="+234..."></div>
+    <div class="fg"><label>I am a…</label>
+      <select name="role" id="regRole" data-change="regrole">
+        <option value="student">Student</option>
+        <option value="parent">Parent</option>
+        <option value="teacher">Teacher</option>
+      </select>
+    </div>
+    <div class="fg" id="regClsWrap"><label>Class</label><select name="cls">${opts(CLASSES)}</select></div>
+    <div class="fg hidden" id="regChildWrap"><label>Your child's registered email</label><input type="email" name="childEmail" placeholder="child@example.com"></div>
+    <div class="fg hidden" id="regCodeWrap"><label>Staff access code</label><input name="code" placeholder="Given by the school"></div>
+    <button class="btn full" type="submit" style="margin-top:6px">Register</button>
+  </form>
+  <p class="mut center" style="margin-top:14px">Already registered? <a data-act="go-login"><b>Sign in</b></a></p>`;
+}
+
+/* =========================================================================
+   DASHBOARD SHELL
+   ========================================================================= */
+const TABS={
+  student:[['overview','Overview','🚀'],['live','My Live','🔴'],['calendar','Calendar','📅'],
+           ['learn','Lessons & Games','📚'],['assignments','Assignments','📝'],['classwork','Classwork','✍️'],['resources','Resources','📂'],
+           ['results','My Results','⭐'],['news','Announcements','📢'],['profile','My Profile','🪪']],
+  teacher:[['overview','Overview','🚀'],['live','My Live','🔴'],['calendar','Calendar','📅'],
+           ['lessons','Lessons & Games','📚'],['assignments','Assignments','📝'],['classwork','Classwork','✍️'],['resources','Resources','📂'],
+           ['results','Enter Results','⭐'],['students','Students','👥'],['news','Announcements','📢']],
+  admin:[['overview','Overview','🚀'],['live','My Live','🔴'],['calendar','Calendar','📅'],
+         ['users','Users','👥'],['students','Students','🎓'],['lessons','Lessons & Games','📚'],
+         ['assignments','Assignments','📝'],['classwork','Classwork','✍️'],['resources','Resources','📂'],['results','Results','⭐'],
+         ['news','Announcements','📢'],['messages','Messages','✉️'],['settings','Settings','⚙️']],
+  parent:[['children','My Children','👨‍👩‍👧'],['overview','Overview','🚀'],['live','My Live','🔴'],
+          ['calendar','Calendar','📅'],['assignments','Assignments','📝'],['classwork','Classwork','✍️'],['results','Results','⭐'],
+          ['news','Announcements','📢']]
+};
+
+const VIEWS={
+  overview:u=>u.role==='student'?studentOverview(u,false)
+             :u.role==='parent'?parentOverview(u)
+             :staffOverview(u),
+  live:u=>liveHTML(u),
+  calendar:u=>calendarHTML(u),
+  learn:u=>learnHTML(u),
+  lessons:u=>lessonsAdminHTML(u),
+  assignments:u=>u.role==='student'?studentAssignments(u,false,'assignment')
+                :u.role==='parent'?parentAssignments(u,'assignment')
+                :teacherAssignments(u,'assignment'),
+  classwork:u=>u.role==='student'?studentAssignments(u,false,'classwork')
+               :u.role==='parent'?parentAssignments(u,'classwork')
+               :teacherAssignments(u,'classwork'),
+  resources:u=>u.role==='student'?studentResources(u)
+              :u.role==='parent'?parentResources(u)
+              :teacherResources(u),
+  results:u=>u.role==='student'?studentResults(u)
+             :u.role==='parent'?parentResults(u)
+             :teacherResults(u),
+  students:u=>studentsHTML(),
+  users:u=>usersHTML(u),
+  news:u=>newsHTML(u),
+  messages:u=>messagesHTML(),
+  profile:u=>profileHTML(u),
+  children:u=>childrenHTML(u),
+  settings:u=>settingsHTML(u)
+};
+
+function dashHTML(u){
+  const tabs=TABS[u.role]||TABS.student;
+  if(!tabs.some(t=>t[0]===state.tab))state.tab=tabs[0][0];
+  const fn=VIEWS[state.tab]||(()=>'');
+  let body='';
+  try{body=fn(u)}catch(e){console.error(e);body='<div class="card"><p>Something went wrong on this page.</p></div>'}
+
+  // birthday celebration for logged in user
+  let bdayHTML='';
+  if(u.profile&&u.profile.dob&&isBirthdayToday(u.profile.dob)){
+    bdayHTML=`<div class="card birthday-card">
+      <h3>🎂 Happy Birthday, ${esc(u.fullname.split(' ')[0])}! 🎉</h3>
+      <p>Everyone at Sonline Classes wishes you a wonderful day filled with joy and learning. 🥳</p>
+    </div>`;
+  }
+
+  const icon=u.role==='admin'?'👑':u.role==='teacher'?'🧑‍🏫':u.role==='parent'?'👨‍👩‍👧':'🎓';
+  return `
+  <div class="banner">
+    <div><h2>Hi ${esc((u.fullname||'').split(' ')[0])} 👋</h2>
+      <p>${cap(u.role)}${u.role==='student'&&u.cls?' · '+esc(u.cls):''}</p></div>
+    <span class="badge big">${icon} ${u.role==='admin'?'Administrator':cap(u.role)}</span>
+  </div>
+  ${bdayHTML}
+  <div class="tabs">
+    ${tabs.map(t=>`<button class="tab ${state.tab===t[0]?'on':''}" data-act="tab" data-tab="${t[0]}">${t[2]} ${t[1]}</button>`).join('')}
+  </div>
+  <div id="dashBody">${body}</div>`;
+}
+
+/* =========================================================================
+   VIEW: MY LIVE
+   ========================================================================= */
+function liveHTML(u){
+  const live=liveNow();
+  const up=upcoming(6);
+  return `
+  <h2>🔴 My Live</h2>
+  ${live.length?live.map(e=>`
+    <div class="card live-card">
+      <h3 style="margin:0 0 4px">LIVE NOW · ${esc(e.title)}</h3>
+      <p class="mut">${esc(e.cls||'All classes')} · started ${fmtTime(e.start)} · ${e.mins} minutes</p>
+      <a class="btn ok" href="${esc(e.link)}" target="_blank" rel="noopener">▶ Join the lesson</a>
+    </div>`).join('')
+  :`<div class="card"><p class="mut">No lesson is live right now.
+      ${up.length?`The next one is <b>${esc(up[0].title)}</b> — ${fmtDT(up[0].start)}.`:'Nothing is scheduled yet.'}</p></div>`}
+
+  <div class="card">
+    <h3>🔗 Permanent class links</h3>
+    <div class="chips">
+      ${cfg.links.map((l,i)=>`<a class="btn" style="background:${COL[i%COL.length]};box-shadow:none"
+        href="${esc(l.u)}" target="_blank" rel="noopener">▶ ${esc(l.n)}</a>`).join('')}
+    </div>
+    <p class="mut small" style="margin-top:10px">These rooms are always open. Your teacher will tell you which one to use.</p>
+  </div>
+
+  <div class="card">
+    <h3>⏰ Coming up</h3>
+    ${up.map(e=>`<div class="rowline">
+      <div><b>${esc(e.title)}</b>
+        <div class="mut small">${fmtDT(e.start)} · ${e.mins} min · ${esc(e.cls||'All classes')}</div></div>
+      <a class="btn sm ok" href="${esc(e.link)}" target="_blank" rel="noopener">Join</a>
+    </div>`).join('')||'<p class="mut">Nothing scheduled yet.</p>'}
+    <button class="btn sm o" data-act="tab" data-tab="calendar" style="margin-top:10px">📅 Open the calendar</button>
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: CALENDAR
+   ========================================================================= */
+function calendarHTML(u){
+  const staff=isStaff(u);
+  const y=state.calD.getFullYear(),m=state.calD.getMonth();
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  const sel=state.selD||todayKey();
+  const evs=events();
+
+  let cells='SMTWTFS'.split('').map(d=>`<div class="ch">${d}</div>`).join('')+'<div></div>'.repeat(first);
+  for(let d=1;d<=days;d++){
+    const key=y+'-'+pad(m+1)+'-'+pad(d);
+    const has=evs.some(e=>dayKey(new Date(e.start))===key);
+    cells+=`<div class="cd ${has?'has':''} ${key===sel?'sel':''}" data-act="pickday" data-key="${key}">${d}</div>`;
+  }
+
+  const list=evs.filter(e=>dayKey(new Date(e.start))===sel).sort((a,b)=>a.start-b.start);
+
+  return `
+  <h2>📅 Class calendar</h2>
+  <div class="card">
+    <div class="calhead">
+      <button class="btn sm o" data-act="prevmonth">‹</button>
+      <b>${state.calD.toLocaleString('en-GB',{month:'long',year:'numeric'})}</b>
+      <button class="btn sm o" data-act="nextmonth">›</button>
+    </div>
+    <div class="cal">${cells}</div>
+    <div class="legend"><i></i> day with a scheduled lesson</div>
+  </div>
+
+  <div class="card">
+    <h3>${fmtDate(sel+'T12:00:00')}</h3>
+    ${list.map(e=>`<div class="rowline">
+      <div><b>${esc(e.title)}</b>
+        <div class="mut small">${fmtTime(e.start)} · ${e.mins} min · ${esc(e.cls||'All classes')}</div></div>
+      <div>
+        <a class="btn sm ok" href="${esc(e.link)}" target="_blank" rel="noopener">Join</a>
+        ${staff?`<button class="btn sm r" data-act="del-event" data-id="${e.id}">✕</button>`:''}
+      </div>
+    </div>`).join('')||'<p class="mut">No lessons on this day.</p>'}
+  </div>
+
+  ${staff?`
+  <div class="card">
+    <h3>➕ Schedule a live lesson</h3>
+    <div class="fgrid">
+      <div class="fg"><label>Lesson title</label><input id="et" placeholder="e.g. Maths — Fractions"></div>
+      <div class="fg"><label>Class</label><select id="ec">${opts(['All Classes'].concat(CLASSES))}</select></div>
+      <div class="fg"><label>Date</label><input id="ed" type="date" value="${sel}"></div>
+      <div class="fg"><label>Start time</label><input id="eh" type="time" value="16:00"></div>
+      <div class="fg"><label>Duration (minutes)</label><input id="em" type="number" value="60" min="10" max="240"></div>
+      <div class="fg"><label>Class link</label><select id="el">
+        ${cfg.links.map(l=>`<option value="${esc(l.u)}">${esc(l.n)}</option>`).join('')}</select></div>
+      <div class="fg"><label>Repeat</label><select id="er">
+        <option value="0">Does not repeat</option>
+        <option value="1">Daily</option>
+        <option value="7">Weekly</option>
+        <option value="30">Monthly</option></select></div>
+      <div class="fg"><label>How many times</label><input id="en" type="number" value="1" min="1" max="400"></div>
+    </div>
+    <button class="btn" data-act="add-event">Add to calendar</button>
+    <p class="mut small" style="margin-top:8px">Tip: 52 weekly lessons fills a whole year of classes in one click.</p>
+  </div>`:''}`;
+}
+
+function addEv(){
+  const t=($('#et')?.value||'').trim();
+  if(!t)return toast('Give the lesson a title.',true);
+  const dateVal=$('#ed')?.value||todayKey();
+  const timeVal=$('#eh')?.value||'16:00';
+  const base=new Date(dateVal+'T'+timeVal);
+  if(isNaN(base))return toast('Pick a valid date and time.',true);
+  const rep=Number($('#er')?.value||0);
+  const count=Math.min(Math.max(Number($('#en')?.value||1),1),400);
+  const mins=Number($('#em')?.value||60);
+  const link=$('#el')?.value||cfg.links[0].u;
+  const cls=$('#ec')?.value||'All Classes';
+  const list=events();
+  for(let i=0;i<count;i++){
+    const d=new Date(base);
+    if(rep===30)d.setMonth(base.getMonth()+i);
+    else d.setDate(base.getDate()+i*rep);
+    list.push({id:uid(),title:t,cls,start:d.getTime(),mins,link,by:me()?me().email:'',ts:Date.now()});
+    if(!rep)break;
+  }
+  saveEvents(list);
+  state.selD=dayKey(base);
+  state.calD=new Date(base.getFullYear(),base.getMonth(),1);
+  toast(count>1?count+' lessons added to the calendar.':'Lesson added to the calendar.');
+  render();
+}
+
+/* =========================================================================
+   VIEW: LESSONS & GAMES (student)
+   ========================================================================= */
+function learnHTML(u){
+  const s=me();
+  const cur=state.cur;
+  if(cur&&cur.kind==='lesson'){
+    const l=lessons().find(x=>x.id===cur.id);
+    if(l)return `
+      <button class="btn o" data-act="back">← Back</button>
+      <h2>${l.kind==='game'?'🎮':'📚'} ${esc(l.title)}</h2>
+      <p class="mut">${esc(l.subject)} · ${esc(l.cls)} · ${esc(l.teacherName||'')}</p>
+      <button class="btn sm" data-act="download-lesson" data-id="${l.id}">⬇ Download HTML</button> <button class="btn sm o" data-act="copy-lesson" data-id="${l.id}">📋 Copy code</button>${me()&&me().role==='student'?'<p class="mut small">When you finish, press the button. Your score goes to your teacher and appears in My Results. <button class="btn sm ok" data-act="ask-score">📨 Send my score</button></p>':''}
+      <iframe class="frame" sandbox="allow-scripts allow-forms allow-modals allow-popups" srcdoc="${esc(withBridge(l.html))}"></iframe>`;
+  }
+  const list=lessons().filter(l=>l.cls==='All Classes'||l.cls===s.cls);
+  const les=list.filter(l=>l.kind!=='game');
+  const gam=list.filter(l=>l.kind==='game');
+
+  const block=(arr,title,icon)=>`
+    <h2>${icon} ${title}</h2>
+    ${arr.length?`<div class="grid">
+      ${arr.map((l,i)=>`<div class="card click" style="border-top:8px solid ${COL[i%COL.length]}"
+        data-act="open-lesson" data-id="${l.id}">
+        <h3>${esc(l.title)}</h3>
+        <p class="mut small">${esc(l.subject)} · ${esc(l.cls)}</p>
+        <p>${esc(l.desc||'Tap to open.')}</p>
+        <span class="badge" style="background:${COL[i%COL.length]};color:#fff">Open</span>
+      </div>`).join('')}
+    </div>`:`<div class="card"><p class="mut">Nothing here yet — check back soon.</p></div>`}`;
+
+  return `<h2>📚 Lessons &amp; Games</h2>
+    <p class="mut">Everything made for ${esc(s.cls||'your class')}.</p>
+    ${block(les,'Lessons','📚')}
+    ${block(gam,'Games','🎮')}`;
+}
+
+/* =========================================================================
+   VIEW: LESSONS & GAMES (staff upload)
+   ========================================================================= */
+function lessonsAdminHTML(u){
+  if(state.cur&&state.cur.kind==='lesson')return learnHTML(u);
+  const list=lessons().filter(l=>u.role==='admin'||l.teacherEmail===u.email);
+  return `
+  <div class="card">
+    <h3>📚 Upload a lesson or game (HTML)</h3>
+    <form data-form="lesson">
+      <div class="fgrid">
+        <div class="fg"><label>Type</label><select name="kind">
+          <option value="lesson">Lesson</option><option value="game">Game</option></select></div>
+        <div class="fg"><label>Title</label><input name="title" required></div>
+        <div class="fg"><label>Subject</label><select name="subject">${opts(SUBJECTS)}</select></div>
+        <div class="fg"><label>Class</label><select name="cls">${opts(['All Classes'].concat(CLASSES))}</select></div>
+      </div>
+      <div class="fg"><label>Short description</label><input name="desc" placeholder="What will the learner do?"></div>
+      <div class="fg"><label>HTML, CSS and JavaScript</label>
+        <textarea id="lessonHtml" name="html" rows="9" placeholder="Paste the full HTML of the lesson or game"></textarea></div>
+      <div class="fg"><label>…or choose a .html file</label>
+        <input type="file" accept=".html,.htm" data-change="readhtml"></div>
+      <button class="btn" type="submit">🚀 Publish</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Published (${list.length})</h3>
+    ${list.map(l=>`<div class="rowline">
+      <div><b>${l.kind==='game'?'🎮':'📚'} ${esc(l.title)}</b>
+        <div class="mut small">${esc(l.subject)} · ${esc(l.cls)} · ${esc(l.teacherName||'')}</div></div>
+      <div>
+        <button class="btn sm o" data-act="open-lesson" data-id="${l.id}">Open / Preview</button><button class="btn sm" data-act="download-lesson" data-id="${l.id}">⬇ Download HTML</button> <button class="btn sm o" data-act="copy-lesson" data-id="${l.id}">📋 Copy code</button>
+        <button class="btn sm r" data-act="del-lesson" data-id="${l.id}">✕</button>
+      </div>
+    </div>`).join('')||'<p class="mut">Nothing published yet.</p>'}
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: ASSIGNMENTS (student / parent)
+   ========================================================================= */
+function cbtForm(a,s){
+  return `<form data-form="submit-cbt" data-aid="${a.id}">
+    <div class="fg"><label>Your name</label><input name="studentName" value="${esc(s.fullname)}" required></div>
+    ${(a.questions||[]).map((q,i)=>`<div class="qbox">
+      <b>${i+1}. ${esc(q.text)}</b>
+      ${q.options.map((o,j)=>`<label class="opt">
+        <input type="radio" name="q_${i}" value="${j}" required>
+        <span><b>${String.fromCharCode(65+j)}.</b> ${esc(o)}</span></label>`).join('')}
+    </div>`).join('')}
+    <button class="btn ok" type="submit">✅ Submit &amp; see my score</button>
+  </form>`;
+}
+function theoryForm(a,s){
+  return `<form data-form="submit-theory" data-aid="${a.id}">
+    <div class="fg"><label>Your name</label><input name="studentName" value="${esc(s.fullname)}" required></div>
+    <div class="fg"><label>Write your answers</label>
+      <textarea name="answerText" rows="7" required placeholder="Type your answers here..."></textarea></div>
+    <div class="fg"><label>Attach supporting work (optional)</label>
+      <input type="file" name="files" multiple>
+      <small class="mut">Up to ${MAX_MB} MB per file.</small></div>
+    <button class="btn" type="submit">📨 Submit answers</button>
+  </form>`;
+}
+function htmlForm(a,s){
+  return `<form data-form="submit-html" data-aid="${a.id}">
+    <div class="fg"><label>Your name</label><input name="studentName" value="${esc(s.fullname)}" required></div>
+    <div class="fg"><label>Upload your finished HTML work or answer file(s)</label>
+      <input type="file" name="files" multiple required
+        accept=".html,.htm,.css,.js,.txt,.pdf,.doc,.docx,.zip,.png,.jpg,.jpeg">
+      <small class="mut">Download the task file, finish it, then upload it here.</small></div>
+    <div class="fg"><label>Note to the teacher (optional)</label><input name="note"></div>
+    <button class="btn ok" type="submit">⬆ Submit work</button>
+  </form>`;
+}
+
+function studentAssignments(s,ro,category='assignment'){
+  if(state.cur&&state.cur.kind==='task'&&state.cur.html!=null){const ta=assignments().find(x=>x.id===state.cur.aid);if(ta)return `<button class="btn o" data-act="back">← Back</button><h2>${esc(ta.title)}</h2><p class="mut small">Do the task, then press the button. Your score goes to your teacher automatically. <button class="btn sm ok" data-act="ask-score">📨 Send my score</button></p><iframe class="frame" sandbox="allow-scripts allow-forms allow-modals" srcdoc="${esc(withBridge(state.cur.html))}"></iframe>`}
+  if(!s.cls)return `<div class="card"><p class="mut">No class is set on this account yet.</p></div>`;
+  const list=classAssignments(s.cls).filter(a=>(a.category||'assignment')===category).slice().sort((a,b)=>String(a.due).localeCompare(String(b.due)));
+  if(!list.length)return `<h2>${category==='classwork'?'✍️ Classwork':'📝 Assignments'}</h2>
+    <div class="card"><p class="mut">No assignments for ${esc(s.cls)} yet. They appear here when your teacher posts them.</p></div>`;
+
+  return `<h2>${category==='classwork'?'✍️ Classwork':'📝 Assignments'} · ${esc(s.cls)}</h2>`+list.map(a=>{
+    const sub=subOf(a.id,s.email);
+    const overdue=a.due<todayKey();
+    const status=sub
+      ?(sub.score!=null?`<span class="badge ok">Marked ${sub.score}/${a.marks}</span>`:`<span class="badge ok">Submitted ✓</span>`)
+      :(overdue?`<span class="badge bad">Overdue</span>`:`<span class="badge warn">Pending</span>`);
+    const kindLabel=a.kind==='cbt'?'CBT':a.kind==='theory'?'Theory':'HTML / File';
+    const canSubmit=!ro&&(!sub||(sub.score==null&&a.kind!=='cbt'));
+
+    let work='';
+    if(canSubmit){
+      if(a.kind==='cbt')work=cbtForm(a,s);
+      else if(a.kind==='theory')work=theoryForm(a,s);
+      else work=htmlForm(a,s);
+    }
+
+    const graded=sub&&sub.score!=null
+      ?`<div class="note"><b>Result: ${sub.score}/${a.marks}</b>${sub.feedback?'<br>'+esc(sub.feedback):''}
+        ${sub.responses?`<div style="margin-top:6px">${sub.responses.map((r,i)=>
+          `<div>Q${i+1}: <b>${r.correct?'✔ Correct':'✘ Incorrect'}</b>${r.correct?'':' — answer: '+String.fromCharCode(65+r.correctIndex)}</div>`).join('')}</div>`:''}
+        </div>`:'';
+
+    const submittedText=sub&&sub.answerText
+      ?`<div class="qbox"><b>Your submitted answers</b><div>${esc(sub.answerText)}</div></div>`:'';
+
+    return `<div class="card" style="border-top:5px solid ${COL[0]}">
+      <h3>${esc(a.title)} ${status}</h3>
+      <p class="mut small">${esc(a.subject)} · ${esc(a.cls)} · ${kindLabel} · due ${fmtDate(a.due)} · ${a.marks} marks</p>
+      ${a.desc?`<p>${esc(a.desc)}</p>`:''}
+      ${a.kind==='cbt'?'':`<div style="margin:8px 0"><b>Task file(s):</b> ${fileBtns(a.files)} ${a.kind==='html'&&!ro&&(a.files||[]).some(f=>/\.html?$/i.test(f.name))&&!(sub&&sub.score!=null)?`<button class="btn sm ok" data-act="open-task" data-id="${a.id}">▶ Do it online</button>`:''}</div>`}
+      ${graded}
+      ${submittedText}
+      ${work}
+    </div>`;
+  }).join('');
+}
+function parentAssignments(u,category='assignment'){const c=parentChild(u);return c?parentBar(u)+studentAssignments(c,true,category):noChildNote()}
+
+/* =========================================================================
+   VIEW: ASSIGNMENTS (teacher / admin)
+   ========================================================================= */
+function questionEditor(){
+  return `<div class="qbox question-editor">
+    <div class="fg"><label class="qnum">Question</label>
+      <textarea placeholder="Type the question" style="min-height:70px"></textarea></div>
+    <div class="fgrid">
+      <div class="fg"><label>Option A</label><input></div>
+      <div class="fg"><label>Option B</label><input></div>
+      <div class="fg"><label>Option C</label><input></div>
+      <div class="fg"><label>Option D</label><input></div>
+    </div>
+    <div class="fg"><label>Correct answer (teacher only)</label>
+      <select><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
+    <button type="button" class="btn sm r" data-act="remove-question">Remove question</button>
+  </div>`;
+}
+function renumberQuestions(){
+  $$('#qList .question-editor').forEach((c,i)=>{
+    const l=c.querySelector('.qnum');if(l)l.textContent='Question '+(i+1);
+  });
+}
+
+function teacherAssignments(u,category='assignment'){
+  const mine=(u.role==='admin'?assignments():assignments().filter(a=>a.teacherEmail===u.email)).filter(a=>(a.category||'assignment')===category).slice().reverse();
+
+  const form=`<div class="card">
+    <div class="note"><b>Site connection note:</b> This standalone HTML currently stores data in the browser on this device. Cross-device student submissions and shared scores require a server/database connection.</div>
+    <h3>${category==='classwork'?'✍️ Create classwork':'📝 Create an assignment'}</h3>
+    <p class="mut small">Choose CBT for auto-marked multiple choice, Theory for written answers, or HTML / File for practical work.</p>
+    <form data-form="assignment" data-category="${category}">
+      <div class="fgrid">
+        <div class="fg"><label>Title</label><input name="title" required placeholder="e.g. Fractions practice"></div>
+        <div class="fg"><label>Subject</label><select name="subject">${opts(SUBJECTS)}</select></div>
+        <div class="fg"><label>Class</label><select name="cls">${opts(['All Classes'].concat(CLASSES))}</select></div>
+        <div class="fg"><label>Due date</label><input type="date" name="due" min="${todayKey()}" required></div>
+        <div class="fg"><label>Format</label>
+          <select name="kind" id="kindSel" data-change="assignkind">
+            <option value="cbt">CBT — automatic marking</option>
+            <option value="theory">Theory — teacher marks</option>
+            <option value="html">HTML / File — upload and submit</option>
+          </select></div>
+        <div class="fg"><label>Total marks</label><input type="number" name="marks" value="20" min="1" max="100" required></div>
+      </div>
+      <div class="fg"><label>Instructions</label><textarea name="desc" style="min-height:90px" placeholder="Describe the assignment..."></textarea></div>
+
+      <div id="cbtBuilder">
+        <div class="rowline" style="border:0">
+          <b>CBT questions &amp; answer key</b>
+          <button class="btn sm" type="button" data-act="add-question">➕ Add question</button>
+        </div>
+        <div id="qList">${questionEditor()}</div>
+      </div>
+
+      <div class="fg hidden" id="filesWrap"><label>Attach task file(s)</label>
+        <input type="file" name="files" multiple
+          accept=".html,.htm,.css,.js,.txt,.pdf,.doc,.docx,.png,.jpg,.jpeg,.zip">
+        <small class="mut">Up to ${MAX_MB} MB per file.</small></div>
+
+      <button class="btn" type="submit">🚀 Publish ${category==='classwork'?'classwork':'assignment'}</button>
+    </form>
+  </div>`;
+
+  const list=mine.map(a=>{
+    const ss=subs().filter(s=>s.aid===a.id);
+    const enrolled=users().filter(x=>x.role==='student'&&(a.cls==='All Classes'||x.cls===a.cls));
+    const missing=enrolled.filter(x=>!ss.some(s=>s.email===x.email));
+    const kindLabel=a.kind==='cbt'?'CBT':a.kind==='theory'?'Theory':'HTML / File';
+    return `<div class="card">
+      <h3>${esc(a.title)}</h3>
+      <p class="mut small">${esc(a.subject)} · ${esc(a.cls)} · ${kindLabel} · due ${fmtDate(a.due)} · ${a.marks} marks</p>
+      ${a.desc?`<p>${esc(a.desc)}</p>`:''}
+      ${a.kind==='cbt'
+        ?`<p class="mut small">${(a.questions||[]).length} questions · ${((a.marks/((a.questions||[]).length||1))).toFixed(2)} marks each</p>`
+        :`<div>${fileBtns(a.files)}</div>`}
+      <details style="margin-top:8px">
+        <summary style="cursor:pointer;font-weight:800;color:var(--pri)">Submissions (${ss.length}/${enrolled.length})</summary>
+        ${ss.length?`<div class="tw" style="margin-top:8px"><table class="tbl">
+          <tr><th>Student</th><th>Answers / Files</th><th>Score</th></tr>
+          ${ss.map(s=>`<tr>
+            <td>${esc(s.name)}<br><small class="mut">${esc(s.cls||'')}</small></td>
+            <td>${s.kind==='cbt'
+              ?(s.responses||[]).map((r,i)=>`Q${i+1}: ${r.correct?'✔':'✘'} (${String.fromCharCode(65+r.selectedIndex)})`).join('<br>')
+              :s.answerText?`<div>${esc(s.answerText)}</div>`:fileBtns(s.files)}</td>
+            <td>${s.kind==='cbt'
+              ?`<b>${s.score}/${a.marks}</b><br><small class="mut">auto-marked</small>`
+              :`<form class="inline" data-form="grade-sub" data-sid="${s.id}" data-max="${a.marks}" style="display:flex;gap:6px;flex-wrap:wrap">
+                  <input type="number" name="score" min="0" max="${a.marks}" step="0.5" value="${s.score==null?'':s.score}" placeholder="/${a.marks}" required style="width:80px;padding:6px 10px">
+                  <input name="feedback" placeholder="Feedback" value="${esc(s.feedback||'')}" style="width:150px;padding:6px 10px">
+                  <button class="btn sm ok" type="submit">Save</button>
+                </form>`}</td>
+          </tr>`).join('')}
+        </table></div>`:'<p class="mut small">No submissions yet.</p>'}
+        ${missing.length?`<p class="mut small"><b>Not yet submitted:</b> ${missing.map(m=>esc(m.fullname)).join(', ')}</p>`:''}
+      </details>
+      <button class="btn sm r" data-act="del-assign" data-id="${a.id}" style="margin-top:10px">🗑 Delete</button>
+    </div>`;
+  }).join('');
+
+  return form+`<h2>${category==='classwork'?'✍️':'📝'} ${category==='classwork'?'Classwork':'Assignments'} · ${u.role==='admin'?'All':'My'} ${category==='classwork'?'classwork':'assignments'}</h2>
+    ${list||'<div class="card"><p class="mut">No assignments created yet.</p></div>'}`;
+}
+
+/* =========================================================================
+   VIEW: RESOURCES
+   ========================================================================= */
+function studentResources(u){
+  const s=me();
+  const list=resources().filter(r=>r.cls==='All Classes'||r.cls===s.cls);
+  return `<h2>📂 Study resources</h2>
+    <p class="mut">Notes and materials shared by your teachers.</p>
+    ${list.map(r=>`<div class="card">
+      <h3>${esc(r.title)}</h3>
+      <p class="mut small">${esc(r.subject)} · ${esc(r.cls)} · ${esc(r.teacherName||'')} · ${fmtDate(r.date)}</p>
+      ${r.desc?`<p>${esc(r.desc)}</p>`:''}
+      <div>${fileBtns(r.files)}</div>
+    </div>`).join('')||'<div class="card"><p class="mut">No resources yet.</p></div>'}`;
+}
+function parentResources(u){const c=parentChild(u);return c?parentBar(u)+studentResources(u):noChildNote()}
+
+function teacherResources(u){
+  const list=(u.role==='admin'?resources():resources().filter(r=>r.teacherEmail===u.email)).slice().reverse();
+  return `
+  <div class="card">
+    <h3>📂 Share a resource</h3>
+    <form data-form="resource">
+      <div class="fgrid">
+        <div class="fg"><label>Title</label><input name="title" required></div>
+        <div class="fg"><label>Subject</label><select name="subject">${opts(SUBJECTS)}</select></div>
+        <div class="fg"><label>Class</label><select name="cls">${opts(['All Classes'].concat(CLASSES))}</select></div>
+      </div>
+      <div class="fg"><label>Description</label><textarea name="desc" style="min-height:80px"></textarea></div>
+      <div class="fg"><label>File(s)</label><input type="file" name="files" multiple required>
+        <small class="mut">Up to ${MAX_MB} MB per file.</small></div>
+      <button class="btn" type="submit">⬆ Upload resource</button>
+    </form>
+  </div>
+  <h2>📂 Uploaded resources</h2>
+  ${list.map(r=>`<div class="card">
+    <h3>${esc(r.title)}</h3>
+    <p class="mut small">${esc(r.subject)} · ${esc(r.cls)} · ${fmtDate(r.date)}</p>
+    ${r.desc?`<p>${esc(r.desc)}</p>`:''}
+    <div>${fileBtns(r.files)}</div>
+    <button class="btn sm r" data-act="del-res" data-id="${r.id}" style="margin-top:10px">🗑 Delete</button>
+  </div>`).join('')||'<div class="card"><p class="mut">Nothing uploaded yet.</p></div>'}`;
+}
+
+/* =========================================================================
+   VIEW: RESULTS
+   ========================================================================= */
+function studentResults(u){
+  const s=me();
+  const g=grades().filter(x=>x.email===s.email);
+  const marked=subs().filter(x=>x.email===s.email&&x.score!=null);
+  const avg=avgScore(s.email);
+  return `<h2>⭐ My results</h2>
+    <div class="grid stats">
+      ${stat('🏫','Class',esc(s.cls||'—'),esc(s.fullname))}
+      ${stat('📊','Average',avg==null?'—':avg+'%',g.length+' subject'+(g.length===1?'':'s')+' recorded')}
+      ${stat('✅','Work marked',marked.length,'assessments')}
+    </div>
+    <div class="card">
+      <h3>Subject results</h3>
+      ${g.length?`<div class="tw"><table class="tbl">
+        <tr><th>Subject</th><th>Score</th><th>Grade</th><th>Remark</th></tr>
+        ${g.map(x=>{const gr=gradeOf(Number(x.score));
+          return `<tr><td>${esc(x.subject)}</td><td><b>${x.score}%</b></td>
+            <td><span class="badge ${Number(x.score)>=40?'ok':'bad'}">${gr[0]}</span></td>
+            <td>${gr[1]}</td></tr>`}).join('')}
+      </table></div>`:'<p class="mut">No subject results have been published yet.</p>'}
+    </div>
+    <div class="card">
+      <h3>Assignment &amp; exam scores</h3>
+      ${marked.length?`<div class="tw"><table class="tbl">
+        <tr><th>Assessment</th><th>Score</th></tr>
+        ${marked.map(x=>`<tr><td>${esc(subTitle(x))}${x.attempts>1?` <small class="mut">(${x.attempts} attempts)</small>`:''}</td>
+            <td><b>${subOut(x)}</b></td></tr>`).join('')}
+        <tr><td><b>TOTAL</b></td><td><b>${scoreTotals(s.email).earned}/${scoreTotals(s.email).possible}${scoreTotals(s.email).pct!=null?' ('+scoreTotals(s.email).pct+'%)':''}</b></td></tr>
+      </table></div>`:'<p class="mut">Nothing marked yet.</p>'}
+    </div>`;
+}
+function parentResults(u){const c=parentChild(u);return c?parentBar(u)+studentResults(u):noChildNote()}
+
+function teacherResults(u){
+  const list=users().filter(x=>x.role==='student'&&x.cls===state.cls);
+  const recs=grades().filter(g=>list.some(s=>s.email===g.email));
+  return `
+  <div class="card">
+    <h3>⭐ Enter a result</h3>
+    <div class="fg" style="max-width:260px"><label>Class</label>
+      <select data-change="setcls">${opts(CLASSES,state.cls)}</select></div>
+    ${list.length?`<form data-form="grade">
+      <div class="fgrid">
+        <div class="fg"><label>Student</label><select name="email">
+          ${list.map(s=>`<option value="${s.email}">${esc(s.fullname)}</option>`).join('')}</select></div>
+        <div class="fg"><label>Subject</label><select name="subject">${opts(SUBJECTS)}</select></div>
+        <div class="fg"><label>Score (out of 100)</label>
+          <input type="number" name="score" min="0" max="100" step="0.5" required></div>
+      </div>
+      <button class="btn" type="submit">💾 Save result</button>
+    </form>`:'<p class="mut">No students registered in this class yet.</p>'}
+  </div>
+
+  <div class="card">
+    <h3>Recorded results · ${esc(state.cls)}</h3>
+    ${recs.length?`<div class="tw"><table class="tbl">
+      <tr><th>Student</th><th>Subject</th><th>Score</th><th>Grade</th><th></th></tr>
+      ${recs.map(g=>{const s=getUser(g.email);const gr=gradeOf(Number(g.score));
+        return `<tr><td>${esc(s?s.fullname:g.email)}</td><td>${esc(g.subject)}</td>
+          <td><b>${g.score}%</b></td><td>${gr[0]}</td>
+          <td><button class="btn sm r" data-act="del-grade" data-id="${g.id}">✕</button></td></tr>`}).join('')}
+    </table></div>`:'<p class="mut">No results recorded.</p>'}
+  </div>
+  <div class="card">
+    <h3>📊 Test, game &amp; assignment scores · ${esc(state.cls)}</h3>
+    ${list.length?`<div class="tw"><table class="tbl">
+      <tr><th>Student</th><th>Work marked</th><th>Total score</th><th>%</th></tr>
+      ${list.map(st=>{const t=scoreTotals(st.email);return `<tr><td><b>${esc(st.fullname)}</b></td><td>${t.n}</td><td><b>${t.earned}/${t.possible}</b></td><td>${t.pct==null?'—':t.pct+'%'}</td></tr>`}).join('')}
+    </table></div>`:'<p class="mut">No students in this class yet.</p>'}
+    <h3 style="margin-top:14px">Test &amp; game submissions</h3>
+    ${(()=>{const r=subs().filter(x=>isLes(x)&&list.some(st=>st.email===x.email)).slice().reverse();return r.length?`<div class="tw"><table class="tbl"><tr><th>Student</th><th>Test / game</th><th>Score</th><th>When</th></tr>${r.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(subTitle(x))}${x.attempts>1?` <small class="mut">(${x.attempts} attempts)</small>`:''}</td><td><b>${subOut(x)}</b></td><td>${fmtDT(x.date)}</td></tr>`).join('')}</table></div>`:'<p class="mut">No test or game scores yet.</p>'})()}
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: STUDENTS DIRECTORY
+   ========================================================================= */
+function studentsHTML(){
+  const list=users().filter(u=>u.role==='student'&&(state.dirCls==='all'||u.cls===state.dirCls));
+  return `<h2>👥 Students</h2>
+  <div class="card">
+    <div class="fg" style="max-width:260px"><label>Filter by class</label>
+      <select data-change="dircls">
+        <option value="all">All classes</option>${opts(CLASSES,state.dirCls)}
+      </select></div>
+    ${list.length?`<div class="tw" style="margin-top:8px"><table class="tbl">
+      <tr><th>Name</th><th>Class</th><th>Student ID</th><th>Profile</th><th>Birthday</th><th></th></tr>
+      ${list.map(s=>`<tr>
+        <td>${esc(s.fullname)}<br><small class="mut">${esc(s.email)}</small></td>
+        <td>${esc(s.cls||'—')}</td>
+        <td>${esc(s.studentId||'—')}</td>
+        <td>${s.profile?'<span class="badge ok">Complete</span>':'<span class="badge warn">Incomplete</span>'}</td>
+        <td>${s.profile&&s.profile.dob?(isBirthdayToday(s.profile.dob)?'🎂 Today!':birthdaySoon(s.profile.dob)?'🎈 Soon':fmtDate(s.profile.dob)):'—'}</td>
+        <td><button class="btn sm" data-act="view-profile" data-email="${esc(s.email)}">View</button></td>
+      </tr>`).join('')}
+    </table></div>`:'<p class="mut">No students found.</p>'}
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: ADMIN USERS (with one-admin rule and code management)
+   ========================================================================= */
+function usersHTML(u){
+  const all=users();
+  const admins=all.filter(x=>x.role==='admin');
+  const isMain=isMainAdmin(u);
+  const canCreateAdmin=admins.length<2;
+
+  const resetCodeForm=isMain?`
+    <div class="card">
+      <h3>⚙️ Access codes & security</h3>
+      <p class="mut small">Only the main admin can see and change these codes.</p>
+      <form data-form="codes">
+        <div class="fgrid">
+          <div class="fg"><label>Teacher access code</label>
+            <input name="teacherCode" value="${esc(cfg.teacherCode)}" required> <button type="button" class="btn sm o" data-act="copy" data-src="teacherCode">📋 Copy</button></div>
+          <div class="fg"><label>Admin access code</label>
+            <input name="adminCode" value="${esc(cfg.adminCode)}" required> <button type="button" class="btn sm o" data-act="copy" data-src="adminCode">📋 Copy</button></div>
+          <div class="fg"><label>Contact-form email delivery URL (Formspree link that forwards to your Gmail)</label><input name="formEndpoint" value="${esc(cfg.formEndpoint||'')}" placeholder="https://formspree.io/f/xxxxxxxx"></div>
+          <div class="fg"><label>WhatsApp number (country code, digits only)</label><input name="whatsapp" value="${esc(cfg.whatsapp||'')}" placeholder="2347037607137"></div>
+          <div class="fg"><label>Supabase project URL</label><input name="supabaseUrl" value="${esc(cfg.supabaseUrl||'')}" placeholder="https://xxxx.supabase.co"></div>
+          <div class="fg"><label>Supabase anon public key</label><input name="supabaseKey" value="${esc(cfg.supabaseKey||'')}" placeholder="eyJ..."></div>
+        </div>
+        <button class="btn" type="submit">💾 Save codes</button>
+      </form>
+    </div>`:'';
+
+  return `<h2>👥 Users <span class="badge">${all.length}</span></h2>
+  ${resetCodeForm}
+  <div class="card">
+    <h3>Admin accounts (${admins.length}/2)</h3>
+    ${admins.map(a=>`<div class="rowline">
+      <div><b>${esc(a.fullname)}</b> <span class="badge ${isMainAdmin(a)?'ok':''}">${isMainAdmin(a)?'Main Admin':'Admin'}</span>
+        <div class="mut small">${esc(a.email)}</div></div>
+      <div>
+        ${!isMainAdmin(a)&&isMain?`<button class="btn sm r" data-act="del-user" data-email="${esc(a.email)}">🗑 Delete admin</button>`:''}
+        ${isMainAdmin(a)?'<span class="badge ok">Protected</span>':''}
+      </div>
+    </div>`).join('')}
+    ${!canCreateAdmin?`<p class="note">⚠️ You already have two admins (the main admin + one extra). No more admin accounts can be created. Delete the extra admin first if you want to replace them.</p>`:''}
+  </div>
+
+  <div class="card">
+    <div class="tw"><table class="tbl">
+      <tr><th>Name</th><th>Email</th><th>Role</th><th>Class</th><th></th></tr>
+      ${all.map(x=>`<tr>
+        <td>${esc(x.fullname)} ${isMainAdmin(x)?'<span class="badge ok">Main</span>':''}</td>
+        <td>${esc(x.email)}</td>
+        <td><span class="badge">${cap(x.role)}</span></td>
+        <td>${esc(x.cls||'—')}</td>
+        <td>
+          <button class="btn sm o" data-act="reset-pw" data-email="${esc(x.email)}">Reset password</button>
+          ${x.email!==u.email&&!isMainAdmin(x)?`<button class="btn sm r" data-act="del-user" data-email="${esc(x.email)}">🗑</button>`:''}
+        </td>
+      </tr>`).join('')}
+    </table></div>
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: SETTINGS (admin)
+   ========================================================================= */
+function settingsHTML(u){
+  if(!isMainAdmin(u))return `<div class="card"><p class="mut">Only the main admin can access settings.</p></div>`;
+  return `
+  <h2>⚙️ Settings</h2>
+  <div class="card">
+    <h3>🎂 Birthday notifications</h3>
+    <p class="mut small">Birthdays are automatically highlighted in the dashboard and in the student directory.</p>
+  </div>
+  <div class="card">
+    <h3>🔐 Access codes</h3>
+    <form data-form="codes">
+      <div class="fgrid">
+        <div class="fg"><label>Teacher access code</label>
+          <input name="teacherCode" value="${esc(cfg.teacherCode)}" required> <button type="button" class="btn sm o" data-act="copy" data-src="teacherCode">📋 Copy</button></div>
+        <div class="fg"><label>Admin access code</label>
+          <input name="adminCode" value="${esc(cfg.adminCode)}" required> <button type="button" class="btn sm o" data-act="copy" data-src="adminCode">📋 Copy</button></div>
+          <div class="fg"><label>Contact-form email delivery URL (Formspree link that forwards to your Gmail)</label><input name="formEndpoint" value="${esc(cfg.formEndpoint||'')}" placeholder="https://formspree.io/f/xxxxxxxx"></div>
+          <div class="fg"><label>WhatsApp number (country code, digits only)</label><input name="whatsapp" value="${esc(cfg.whatsapp||'')}" placeholder="2347037607137"></div>
+          <div class="fg"><label>Supabase project URL</label><input name="supabaseUrl" value="${esc(cfg.supabaseUrl||'')}" placeholder="https://xxxx.supabase.co"></div>
+          <div class="fg"><label>Supabase anon public key</label><input name="supabaseKey" value="${esc(cfg.supabaseKey||'')}" placeholder="eyJ..."></div>
+      </div>
+      <button class="btn" type="submit">💾 Save codes</button>
+    </form>
+    <p class="mut small" style="margin-top:10px">Changing a code stops anyone who knows the old one from registering with that role.</p>
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: NEWS
+   ========================================================================= */
+function newsHTML(u){
+  const staff=isStaff(u);
+  const list=news().filter(n=>audienceOk(n,u.role));
+  return `
+  ${staff?`<div class="card">
+    <h3>📢 Post an announcement</h3>
+    <form data-form="news">
+      <div class="fgrid">
+        <div class="fg"><label>Title</label><input name="title" required></div>
+        <div class="fg"><label>Audience</label><select name="audience">
+          <option value="all">Everyone (also on the home page)</option>
+          <option value="student">Students</option>
+          <option value="parent">Parents</option>
+          <option value="teacher">Teachers</option>
+        </select></div>
+      </div>
+      <div class="fg"><label>Message</label><textarea name="body" required style="min-height:90px"></textarea></div>
+      <button class="btn" type="submit">📨 Post</button>
+    </form>
+  </div>`:''}
+  <div class="card">
+    <h3>📢 Announcements</h3>
+    ${list.map(n=>`<div class="rowline">
+      <div style="flex:1;min-width:200px">
+        <b>${esc(n.title)}</b> <span class="badge">${n.audience==='all'?'Everyone':cap(n.audience)+'s'}</span>
+        <div class="mut small">${esc(n.author||'')} · ${fmtDate(n.date)}</div>
+        <div>${esc(n.body)}</div>
+      </div>
+      ${(u.role==='admin'||n.authorEmail===u.email)
+        ?`<button class="btn sm r" data-act="del-news" data-id="${n.id}">✕</button>`:''}
+    </div>`).join('')||'<p class="mut">No announcements yet.</p>'}
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: MESSAGES (admin)
+   ========================================================================= */
+function messagesHTML(){
+  const list=messages().slice().reverse();
+  return `<h2>✉️ Contact messages</h2>
+  <p class="mut small">Messages sent from other people's devices reach you by email/WhatsApp, or automatically if you set the delivery URL in Settings.</p>
+  ${list.map(m=>`<div class="card">
+    <h3>${esc(m.subject)}</h3>
+    <p class="mut small">${esc(m.name)} · <a href="mailto:${esc(m.email)}">${esc(m.email)}</a> · ${fmtDate(m.date)}</p>
+    <p>${esc(m.body)}</p>
+    <button class="btn sm r" data-act="del-msg" data-id="${m.id}">🗑 Delete</button>
+  </div>`).join('')||'<div class="card"><p class="mut">No messages yet.</p></div>'}`;
+}
+
+/* =========================================================================
+   VIEW: PROFILE (student) - now with mandatory completion check
+   ========================================================================= */
+function profileHTML(u){
+  const s=me();
+  if(u.role==='parent')return parentProfile(u);
+
+  // check profile completeness
+  const needsProfile=!u.profile||!u.profile.dob||!u.profile.guardianName||!u.profile.guardianPhone||!u.profile.address;
+
+  if(u.profile&&!state.edit){
+    return `
+    ${needsProfile?`<div class="note">⚠️ Your profile is incomplete. Please fill in all required fields.</div>`:''}
+    ${profileCard(s)}
+    <div style="margin-top:14px">
+      <button class="btn gold" data-act="edit-profile">✏️ Edit profile</button>
+      <button class="btn o" onclick="window.print()">🖨 Print</button>
+    </div>`;
+  }
+
+  const p=u.profile||{};
+  return `<h2>🪪 My profile</h2>
+  <div class="card">
+    <div class="note">${needsProfile?'<b>⚠️ Complete all fields to unlock assignments and results.</b><br>':'Fill in your details and press <b>Save profile</b>.'} Your student ID is created automatically.</div>
+    <form data-form="profile">
+      <div class="fgrid">
+        <div class="fg"><label>Full name *</label><input name="fullname" value="${esc(u.fullname)}" required></div>
+        <div class="fg"><label>Class *</label><select name="cls">${opts(CLASSES,u.cls)}</select></div>
+        <div class="fg"><label>Date of birth *</label><input type="date" name="dob" value="${esc(p.dob||'')}" required></div>
+        <div class="fg"><label>Gender *</label><select name="gender">${opts(['Male','Female'],p.gender)}</select></div>
+        <div class="fg"><label>Country</label><input name="country" value="${esc(p.country||'Nigeria')}"></div>
+        <div class="fg"><label>State / region</label><input name="state" value="${esc(p.state||'')}"></div>
+        <div class="fg"><label>Parent / guardian name *</label><input name="guardianName" value="${esc(p.guardianName||'')}" required></div>
+        <div class="fg"><label>Guardian phone *</label><input name="guardianPhone" value="${esc(p.guardianPhone||'')}" required></div>
+        <div class="fg"><label>Guardian email</label><input type="email" name="guardianEmail" value="${esc(p.guardianEmail||'')}"></div>
+      </div>
+      <div class="fg"><label>Home address *</label><textarea name="address" style="min-height:80px" required>${esc(p.address||'')}</textarea></div>
+      <div class="fg"><label>My learning goal this year</label><input name="goal" value="${esc(p.goal||'')}" placeholder="e.g. Improve my maths score"></div>
+      <div class="fg"><label>Passport photograph ${p.photo?'(leave empty to keep current)':''}</label>
+        <input type="file" name="photo" accept="image/*"></div>
+      <button class="btn" type="submit">💾 Save profile</button>
+      ${u.profile?'<button class="btn o" type="button" data-act="cancel-edit">Cancel</button>':''}
+    </form>
+  </div>`;
+}
+function profileCard(s){
+  const p=s.profile;
+  if(!p)return '<div class="card"><p class="mut">This student has not completed their profile yet.</p></div>';
+  const rows=[
+    ['Student ID',s.studentId],['Class',s.cls],['Date of birth',fmtDate(p.dob)],
+    ['Gender',p.gender],['Country',p.country],['State / region',p.state],
+    ['Parent / guardian',p.guardianName],['Guardian phone',p.guardianPhone],
+    ['Guardian email',p.guardianEmail],['Home address',p.address],
+    ['Learning goal',p.goal],['Email',s.email],['Profile updated',fmtDate(p.submittedAt)]
+  ];
+  return `<div class="card" id="printArea">
+    ${isBirthdayToday(p.dob)?`<div class="note" style="background:#fce7f3;border-color:var(--rose)">🎂 <b>Happy Birthday!</b> 🎉</div>`:''}
+    <div class="profile-head">
+      <div class="photo">${p.photo?`<img data-fid="${p.photo.id}" alt="Photo" style="width:100%;height:100%;object-fit:cover">`:'🎓'}</div>
+      <div><h2 style="margin:0">${esc(s.fullname)}</h2>
+        <p class="mut">Sonline Classes · samson online classes</p>
+        <span class="badge">${esc(s.cls||'—')}</span></div>
+    </div>
+    <div class="pgrid">
+      ${rows.map(r=>`<div><span>${r[0]}</span><b>${r[1]?esc(r[1]):'—'}</b></div>`).join('')}
+    </div>
+  </div>`;
+}
+function parentProfile(u){
+  return `<h2>🪪 My account</h2>
+  <div class="card">
+    <div class="pgrid">
+      <div><span>Name</span><b>${esc(u.fullname)}</b></div>
+      <div><span>Email</span><b>${esc(u.email)}</b></div>
+      <div><span>Phone</span><b>${esc(u.phone||'—')}</b></div>
+      <div><span>Linked children</span><b>${(u.children||[]).length}</b></div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: PARENT CHILDREN
+   ========================================================================= */
+function noChildNote(){
+  return `<div class="card"><div class="note">You have not linked a child yet.
+    Open <b>My Children</b> to link your child's account.</div>
+    <button class="btn" data-act="tab" data-tab="children">👨‍👩‍👧 Link a child</button></div>`;
+}
+function parentChild(u){
+  const kids=(u.children||[]).map(getUser).filter(Boolean);
+  if(!kids.length)return null;
+  let c=kids.find(k=>k.email===state.child)||kids[0];
+  state.child=c.email;
+  return c;
+}
+function parentBar(u){
+  const kids=(u.children||[]).map(getUser).filter(Boolean);
+  if(kids.length<2)return '';
+  return `<div class="card" style="padding:12px 16px">
+    <label><b>Viewing:</b>
+      <select data-change="pickchild" style="max-width:280px;display:inline-block;width:auto">
+        ${kids.map(k=>`<option value="${esc(k.email)}" ${k.email===state.child?'selected':''}>${esc(k.fullname)} (${esc(k.cls||'')})</option>`).join('')}
+      </select></label>
+  </div>`;
+}
+function childrenHTML(u){
+  const kids=(u.children||[]).map(getUser).filter(Boolean);
+  return `
+  <div class="card">
+    <h3>🔗 Link a child</h3>
+    <p class="mut small">Enter your child's registered email and the student ID shown on their profile.</p>
+    <form data-form="link-child">
+      <div class="fgrid">
+        <div class="fg"><label>Student email</label><input type="email" name="email" required></div>
+        <div class="fg"><label>Student ID</label><input name="sid" placeholder="SON/2026/001" required></div>
+      </div>
+      <button class="btn" type="submit">🔗 Link child</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>👨‍👩‍👧 My children</h3>
+    ${kids.map(k=>`<div class="rowline">
+      <div><b>${esc(k.fullname)}</b> <span class="badge">${esc(k.cls||'')}</span>
+        <div class="mut small">${esc(k.email)} · ${esc(k.studentId||'')}</div></div>
+      <div>
+        <button class="btn sm" data-act="pick-child" data-email="${esc(k.email)}">View</button>
+        <button class="btn sm r" data-act="unlink" data-email="${esc(k.email)}">Unlink</button>
+      </div>
+    </div>`).join('')||'<p class="mut">No children linked yet.</p>'}
+  </div>`;
+}
+
+/* =========================================================================
+   VIEW: OVERVIEWS (with birthday reminders)
+   ========================================================================= */
+function studentOverview(s,ro){
+  const mine=classAssignments(s.cls||'');
+  const pending=mine.filter(a=>!subOf(a.id,s.email)).length;
+  const avg=avgScore(s.email);
+  const up=upcoming(3);
+  const nl=news().filter(n=>audienceOk(n,ro?'parent':'student')).slice(0,3);
+
+  // upcoming birthdays for students
+  const allStudents=users().filter(x=>x.role==='student'&&x.profile&&x.profile.dob);
+  const soonBirthdays=allStudents.filter(x=>birthdaySoon(x.profile.dob,14)&&!isBirthdayToday(x.profile.dob));
+
+  return `
+  <div class="grid stats">
+    ${stat('🏫','Class',esc(s.cls||'—'),esc(s.fullname))}
+    ${stat('📝','Pending tasks',pending,mine.length+' assigned')}
+    ${stat('⭐','Average',avg==null?'—':avg+'%','All marked work')}
+    ${stat('🔴','Next live lesson',up[0]?fmtTime(up[0].start):'—',up[0]?esc(up[0].title):'Nothing scheduled')}
+  </div>
+  ${!s.profile||!s.profile.dob?`<div class="note">🪪 Your profile is incomplete — assignments and results are locked until you complete it. <button class="btn sm gold" data-act="tab" data-tab="profile" style="margin-left:8px">Complete now</button></div>`:''}
+  ${soonBirthdays.length?`<div class="card"><h3>🎈 Upcoming birthdays</h3>
+    ${soonBirthdays.map(x=>`<div class="rowline"><span>${esc(x.fullname)}</span><span class="badge warn">${fmtDate(x.profile.dob)}</span></div>`).join('')}
+  </div>`:''}
+  <div class="card">
+    <h3>⏰ Coming up</h3>
+    ${up.map(e=>`<div class="rowline">
+      <div><b>${esc(e.title)}</b>
+        <div class="mut small">${fmtDT(e.start)} · ${e.mins} min</div></div>
+      <a class="btn sm ok" href="${esc(e.link)}" target="_blank" rel="noopener">Join</a>
+    </div>`).join('')||'<p class="mut">Nothing scheduled yet.</p>'}
+  </div>
+  <div class="card">
+    <h3>📢 Latest announcements</h3>
+    ${nl.map(newsItem).join('')||'<p class="mut">No announcements yet.</p>'}
+  </div>`;
+}
+function parentOverview(u){
+  const c=parentChild(u);
+  return c?parentBar(u)+studentOverview(c,true):noChildNote();
+}
+function staffOverview(u){
+  const mine=u.role==='admin'?assignments():assignments().filter(a=>a.teacherEmail===u.email);
+  const ids=mine.map(a=>a.id);
+  const ss=subs().filter(s=>ids.includes(s.aid));
+  const up=upcoming(3);
+  const nl=news().filter(n=>audienceOk(n,u.role)).slice(0,3);
+
+  // birthday reminders for staff
+  const allStudents=users().filter(x=>x.role==='student'&&x.profile&&x.profile.dob);
+  const todayBdays=allStudents.filter(x=>isBirthdayToday(x.profile.dob));
+  const soonBirthdays=allStudents.filter(x=>birthdaySoon(x.profile.dob,14)&&!isBirthdayToday(x.profile.dob));
+
+  return `
+  <div class="grid stats">
+    ${stat('📝','Assignments posted',mine.length)}
+    ${stat('📥','Submissions',ss.length)}
+    ${stat('⏳','Awaiting marking',ss.filter(s=>s.score==null).length)}
+    ${stat('🎓','Students',users().filter(x=>x.role==='student').length)}
+  </div>
+  ${todayBdays.length?`<div class="card birthday-card"><h3>🎂 Birthdays today</h3>
+    ${todayBdays.map(x=>`<div class="rowline"><span>${esc(x.fullname)}</span><span class="badge ok">🎉 Celebrate!</span></div>`).join('')}
+  </div>`:''}
+  ${soonBirthdays.length?`<div class="card"><h3>🎈 Upcoming birthdays (14 days)</h3>
+    ${soonBirthdays.map(x=>`<div class="rowline"><span>${esc(x.fullname)}</span><span class="badge warn">${fmtDate(x.profile.dob)}</span></div>`).join('')}
+  </div>`:''}
+  <div class="card">
+    <h3>⏰ Coming up</h3>
+    ${up.map(e=>`<div class="rowline">
+      <div><b>${esc(e.title)}</b>
+        <div class="mut small">${fmtDT(e.start)} · ${esc(e.cls||'All classes')}</div></div>
+      <a class="btn sm ok" href="${esc(e.link)}" target="_blank" rel="noopener">Join</a>
+    </div>`).join('')||'<p class="mut">Nothing scheduled yet.</p>'}
+  </div>
+  <div class="card">
+    <h3>📢 Latest announcements</h3>
+    ${nl.map(newsItem).join('')||'<p class="mut">No announcements yet.</p>'}
+  </div>`;
+}
+
+/* =========================================================================
+   ACTION HANDLERS
+   ========================================================================= */
+const A={};
+A.bounce=el=>{el.classList.remove('b');void el.offsetWidth;el.classList.add('b')};
+A.portal=()=>go(me()?'dashboard':'auth');
+A['go-register']=()=>{state.authMode='register';go('auth')};
+A['go-login']=()=>{state.authMode='login';go('auth')};
+A.logout=()=>{LSset('session',null);state.page='home';state.tab='overview';render();toast('Logged out. See you soon!')};
+A.tab=el=>{state.tab=el.dataset.tab;state.edit=false;render();window.scrollTo({top:0,behavior:'smooth'})};
+A.back=()=>{state.cur=null;render()};
+async function copyText(t,msg){
+  try{await navigator.clipboard.writeText(t)}
+  catch(e){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}ta.remove()}
+  toast(msg||'Copied!');
+}
+A.copy=el=>{const f=el.closest('form'),i=f&&f.elements[el.dataset.src];if(i)copyText(i.value,'Code copied!')};
+A['copy-lesson']=el=>{const l=lessons().find(x=>x.id===el.dataset.id);if(l)copyText(l.html,'HTML code copied!')};
+A['ask-score']=()=>{const fr=document.querySelector('iframe.frame');if(fr&&fr.contentWindow)fr.contentWindow.postMessage({sonlineAsk:1},'*')};
+A['open-task']=async el=>{
+  const a=assignments().find(x=>x.id===el.dataset.id);if(!a)return;
+  const f=(a.files||[]).find(x=>/\.html?$/i.test(x.name));if(!f)return toast('No HTML file on this task.',true);
+  const rec=await getFile(f.id);if(!rec)return toast('Task file not found on this device.',true);
+  state.cur={kind:'task',aid:a.id,html:await new Response(rec.blob).text()};render();window.scrollTo({top:0,behavior:'smooth'});
+};
+A['open-lesson']=el=>{state.cur={kind:'lesson',id:el.dataset.id};render();window.scrollTo({top:0,behavior:'smooth'})};
+A['download-lesson']=el=>{
+  const l=lessons().find(x=>x.id===el.dataset.id);
+  if(!l)return toast('Lesson/game not found.',true);
+  const blob=new Blob([l.html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=(l.title||'sonline-lesson').replace(/[^a-z0-9-_ ]/gi,'').trim().replace(/\\s+/g,'-')+'.html';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  toast('HTML file downloaded.');
+};
+A.open=el=>openFile(el.dataset.fid,el.dataset.type,el.dataset.name,false);
+A.download=el=>openFile(el.dataset.fid,el.dataset.type,el.dataset.name,true);
+A['close-modal']=closeModal;
+A['close-modal-bg']=(el,e)=>{if(e.target===el)closeModal()};
+A.prevmonth=()=>{state.calD=new Date(state.calD.getFullYear(),state.calD.getMonth()-1,1);render()};
+A.nextmonth=()=>{state.calD=new Date(state.calD.getFullYear(),state.calD.getMonth()+1,1);render()};
+A.pickday=el=>{state.selD=el.dataset.key;render()};
+A['add-event']=()=>addEv();
+A['del-event']=el=>{
+  if(!confirm('Delete this lesson from the calendar?'))return;
+  saveEvents(events().filter(e=>e.id!==el.dataset.id));
+  toast('Lesson removed.');render();
+};
+A['add-question']=()=>{
+  const list=$('#qList');if(!list)return;
+  list.insertAdjacentHTML('beforeend',questionEditor());
+  renumberQuestions();
+};
+A['remove-question']=el=>{
+  const card=el.closest('.question-editor');if(!card)return;
+  const list=$('#qList');
+  if(list.querySelectorAll('.question-editor').length<=1)return toast('A CBT needs at least one question.',true);
+  card.remove();renumberQuestions();
+};
+A['del-lesson']=el=>{
+  if(!confirm('Delete this lesson/game?'))return;
+  saveLessons(lessons().filter(l=>l.id!==el.dataset.id));
+  toast('Deleted.');render();
+};
+A['del-assign']=el=>{
+  if(!confirm('Delete this assignment and all its submissions?'))return;
+  const id=el.dataset.id;
+  const a=assignments().find(x=>x.id===id);
+  if(a)delFiles(a.files);
+  subs().filter(s=>s.aid===id).forEach(s=>delFiles(s.files));
+  saveAssignments(assignments().filter(x=>x.id!==id));
+  saveSubs(subs().filter(s=>s.aid!==id));
+  toast('Assignment deleted.');render();
+};
+A['del-res']=el=>{
+  if(!confirm('Delete this resource?'))return;
+  const r=resources().find(x=>x.id===el.dataset.id);
+  if(r)delFiles(r.files);
+  saveResources(resources().filter(x=>x.id!==el.dataset.id));
+  toast('Resource deleted.');render();
+};
+A['del-grade']=el=>{saveGrades(grades().filter(g=>g.id!==el.dataset.id));render()};
+A['del-news']=el=>{saveNews(news().filter(n=>n.id!==el.dataset.id));toast('Announcement deleted.');render()};
+A['del-msg']=el=>{saveMessages(messages().filter(m=>m.id!==el.dataset.id));render()};
+A['edit-profile']=()=>{state.edit=true;render()};
+A['cancel-edit']=()=>{state.edit=false;render()};
+A['view-profile']=el=>{
+  const s=getUser(el.dataset.email);
+  if(s)showModal(profileCard(s));
+};
+A['pick-child']=el=>{state.child=el.dataset.email;state.tab='overview';render()};
+A.unlink=el=>{
+  const u=me();
+  updateUser(u.email,x=>{x.children=(x.children||[]).filter(e=>e!==el.dataset.email)});
+  toast('Child unlinked.');render();
+};
+A['reset-pw']=async el=>{
+  const p=prompt('New password (min 6 characters) for '+el.dataset.email);
+  if(p==null)return;
+  if(p.length<6)return toast('Password too short.',true);
+  const hp=await pwHash(el.dataset.email,p);updateUser(el.dataset.email,x=>{x.password=hp});
+  toast('Password updated.');
+};
+A['del-user']=el=>{
+  const em=el.dataset.email,cu=me();
+  if(em===cu.email)return toast('You cannot delete your own account.',true);
+  const target=getUser(em);
+  if(!target)return toast('User not found.',true);
+  if(isMainAdmin(target))return toast('The main admin account cannot be deleted.',true);
+  if(target.role==='admin'){
+    // extra admin can only be deleted by main admin
+    if(!isMainAdmin(cu))return toast('Only the main admin can delete an admin account.',true);
+  }
+  if(!confirm('Delete '+em+' and all their work?'))return;
+  subs().filter(s=>s.email===em).forEach(s=>delFiles(s.files));
+  saveSubs(subs().filter(s=>s.email!==em));
+  saveGrades(grades().filter(g=>g.email!==em));
+  saveUsers(users().filter(x=>x.email!==em));
+  toast('User deleted.');render();
+};
+
+window.addEventListener('message',e=>{
+  const d=e.data;if(!d||d.sonline!==1||d.type!=='score')return;
+  const fr=document.querySelector('iframe.frame');if(!fr||e.source!==fr.contentWindow)return;
+  const u=me(),c=state.cur;if(!u||!c)return;
+  const sc=Number(d.score),tt=Number(d.total);
+  if(!isFinite(sc)||!isFinite(tt)||tt<=0||sc<0||sc>tt)return toast('The score could not be read. Finish the test first.',true);
+  if(u.role!=='student')return toast('Preview only: this would send '+sc+'/'+tt+' for a student.');
+  const all=subs();let rec,old,title;
+  if(c.kind==='lesson'){
+    const l=lessons().find(x=>x.id===c.id);if(!l)return;
+    old=all.find(s=>s.aid==='les:'+l.id&&s.email===u.email);title=l.title;
+    rec={id:old?old.id:uid(),aid:'les:'+l.id,email:u.email,name:u.fullname,cls:u.cls,kind:l.kind==='game'?'game':'lesson',title:l.title,score:sc,total:tt,details:d.details||'',attempts:(old&&old.attempts||0)+1,date:new Date().toISOString()};
+  }else if(c.kind==='task'){
+    const a=assignments().find(x=>x.id===c.aid);if(!a)return;
+    old=all.find(s=>s.aid===a.id&&s.email===u.email);title=a.title;
+    const scaled=Math.round(sc/tt*Number(a.marks)*100)/100;
+    rec={id:old?old.id:uid(),aid:a.id,email:u.email,name:u.fullname,cls:u.cls,files:old&&old.files||[],kind:'html',answerText:'Auto-reported by the task: '+sc+' out of '+tt+'. '+(d.details||'').slice(0,300),score:scaled,feedback:'Auto-scored: '+sc+' of '+tt+'.',date:new Date().toISOString()};
+  }else return;
+  if(old)all[all.indexOf(old)]=rec;else all.push(rec);
+  saveSubs(all);
+  showModal('<h3>✅ Score sent to your teacher</h3><p class="big" style="font-size:2rem;margin:8px 0"><b>'+(c.kind==='task'?rec.score+'/'+(assignments().find(x=>x.id===c.aid)||{}).marks:sc+'/'+tt)+'</b></p><p class="mut">'+esc(title)+'. You can see it in My Results.</p><button class="btn" data-act="close-modal">OK</button>');
+});
+document.addEventListener('click',e=>{
+  const pageEl=e.target.closest('[data-page]');
+  if(pageEl&&!e.target.closest('[data-act]')){e.preventDefault();go(pageEl.dataset.page);return}
+  const link=e.target.closest('a[href]');
+  if(link&&!link.hasAttribute('data-act'))return; // let real links (mailto:, wa.me, tel:) work normally
+  const el=e.target.closest('[data-act]');
+  if(el&&A[el.dataset.act]){e.preventDefault();A[el.dataset.act](el,e)}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* =========================================================================
+   CHANGE HANDLERS
+   ========================================================================= */
+const CH={
+  regrole(el){
+    const v=el.value;
+    const cw=$('#regClsWrap'),kw=$('#regChildWrap'),code=$('#regCodeWrap');
+    if(cw)cw.classList.toggle('hidden',v!=='student');
+    if(kw)kw.classList.toggle('hidden',v!=='parent');
+    if(code)code.classList.toggle('hidden',!(v==='teacher'||v==='admin'));
+  },
+  assignkind(el){
+    const cbt=el.value==='cbt';
+    const b=$('#cbtBuilder'),fw=$('#filesWrap');
+    if(b)b.classList.toggle('hidden',!cbt);
+    if(fw)fw.classList.toggle('hidden',cbt);
+  },
+  readhtml(el){
+    const f=el.files&&el.files[0];if(!f)return;
+    f.text().then(t=>{
+      const ta=$('#lessonHtml');
+      if(ta){ta.value=t;toast('File loaded into the editor.')}
+    });
+  },
+  pickchild(el){state.child=el.value;render()},
+  setcls(el){state.cls=el.value;render()},
+  dircls(el){state.dirCls=el.value;render()}
+};
+document.addEventListener('change',e=>{
+  const el=e.target.closest('[data-change]');
+  if(el&&CH[el.dataset.change])CH[el.dataset.change](el);
+});
+
+/* =========================================================================
+   FORM HANDLERS
+   ========================================================================= */
+const F={};
+
+F.login=async f=>{
+  const v=Object.fromEntries(new FormData(f));
+  const email=String(v.email||'').trim().toLowerCase();
+  const u=getUser(email);
+  if(!u)return toast('Account not found. Please register first.',true);
+  if(!(await pwOk(u,String(v.password||''))))return toast('Incorrect password.',true);
+  if(!String(u.password).startsWith('h1:')){const hp=await pwHash(u.email,String(v.password));updateUser(u.email,x=>{x.password=hp})}
+  LSset('session',{email:u.email});
+  f.reset();
+  state.tab=(TABS[u.role]||TABS.student)[0][0];
+  state.page='dashboard';
+  render();
+  toast('Welcome back, '+u.fullname.split(' ')[0]+'!');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+F.register=async f=>{
+  const v=Object.fromEntries(new FormData(f));
+  const email=String(v.email||'').trim().toLowerCase();
+  const role=v.role;
+  if(!v.fullname||!email||!v.phone)return toast('Please fill in every field.',true);
+  if(String(v.password||'').length<6)return toast('Password must be at least 6 characters.',true);
+  if(getUser(email))return toast('That email is already registered.',true);
+
+  if(role==='admin')return toast('Admin accounts can only be created by the main admin.',true);
+  if(role==='teacher'&&v.code!==cfg.teacherCode)return toast('Wrong teacher access code. Ask the admin.',true);
+  if(role==='admin'){
+    if(v.code!==cfg.adminCode)return toast('Wrong admin access code.',true);
+    const admins=users().filter(x=>x.role==='admin');
+    if(admins.length>=2)return toast('There can only be one main admin and one extra admin. No more admin accounts can be created.',true);
+  }
+
+  const all=users();
+  let children=[];
+  if(role==='parent'){
+    const ce=String(v.childEmail||'').trim().toLowerCase();
+    const child=all.find(x=>x.email===ce&&x.role==='student');
+    if(!child)return toast('No student is registered with that email yet. Ask your child to register first.',true);
+    children=[ce];
+  }
+
+  const rec={
+    id:uid(),fullname:String(v.fullname).trim(),email,password:await pwHash(email,String(v.password)),
+    role,cls:role==='student'?v.cls:'',
+    studentId:role==='student'?nextStudentId():'',
+    phone:String(v.phone).trim(),profile:null,children,
+    created:new Date().toISOString()
+  };
+  all.push(rec);saveUsers(all);
+  LSset('session',{email});
+  state.tab=(TABS[role]||TABS.student)[0][0];
+  state.page='dashboard';
+  render();
+  toast('Welcome to Sonline Classes! 🎉');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+function nextStudentId(){
+  let n=Number(LSget('seq',0))||0;
+  const taken=users().map(u=>u.studentId).filter(Boolean);
+  let id;
+  do{n++;id='SON/'+new Date().getFullYear()+'/'+String(n).padStart(3,'0')}while(taken.includes(id));
+  LSset('seq',n);
+  return id;
+}
+
+F.contact=async f=>{
+  const v=Object.fromEntries(new FormData(f));
+  const rec={id:uid(),name:String(v.name||'').trim(),email:String(v.email||'').trim(),subject:String(v.subject||'').trim(),body:String(v.body||'').trim(),date:new Date().toISOString()};
+  const btn=f.querySelector('[type=submit]');if(btn){btn.disabled=true;btn.textContent='Sending…'}
+  // 1) always keep a copy on this device
+  const m=messages();m.push(rec);saveMessages(m);
+  // 2) email delivery through Formspree
+  let mailed=false;
+  const ep=String(cfg.formEndpoint||'').trim();
+  if(/^https:\/\//.test(ep)){
+    try{const r=await fetch(ep,{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/json'},
+      body:JSON.stringify({name:rec.name,email:rec.email,_replyto:rec.email,_subject:'Sonline website: '+rec.subject,subject:rec.subject,message:rec.body})});mailed=r.ok}catch(e){}
+  }
+  // 3) cloud copy in Supabase (table: contact_messages)
+  const saved=await sbInsert('contact_messages',{name:rec.name,email:rec.email,subject:rec.subject,message:rec.body});
+  f.reset();if(btn){btn.disabled=false;btn.textContent='📨 Send message'}
+  const to=cfg.email||'sonlineclasses01@gmail.com',wa=waNum();
+  const txt='From: '+rec.name+' ('+rec.email+')\n\n'+rec.body;
+  const waBtn=wa?`<a class="btn ok" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent('*'+rec.subject+'*\n'+txt)}">💬 Send on WhatsApp</a>`:'';
+  const mailBtn=`<a class="btn" href="mailto:${esc(to)}?subject=${encodeURIComponent(rec.subject)}&body=${encodeURIComponent(txt)}">✉ Send by email</a>`;
+  if(mailed){
+    showModal(`<h3>✅ Message sent!</h3><p>Thank you, ${esc(rec.name)}. Your message has been delivered to Sonline Classes by email${saved?' and saved':''}. We will reply soon.</p>
+      <p class="mut small">Want a faster reply? Message us on WhatsApp too:</p><p>${waBtn}</p>`);
+  }else{
+    showModal(`<h3>📨 One more tap to send</h3><p>Your message is saved. Tap a button to deliver it to Sonline Classes now:</p><p>${mailBtn} ${waBtn}</p>`);
+  }
+};
+
+F.lesson=f=>{
+  const u=me();
+  const v=Object.fromEntries(new FormData(f));
+  const html=String(v.html||'').trim();
+  if(!String(v.title||'').trim())return toast('Give the lesson a title.',true);
+  if(!html)return toast('Paste the HTML or choose a .html file.',true);
+  if(html.length>600000)return toast('That lesson is too large (max 600 KB).',true);
+  const list=lessons();
+  list.push({id:uid(),kind:v.kind,title:String(v.title).trim(),subject:v.subject,cls:v.cls,
+    desc:String(v.desc||'').trim(),html,teacherEmail:u.email,teacherName:u.fullname,
+    date:new Date().toISOString()});
+  saveLessons(list);
+  toast('Published! Your learners can open it now.');
+  render();
+};
+
+F.assignment=async f=>{
+  const u=me();
+  const v=Object.fromEntries(new FormData(f));
+  const kind=v.kind||'cbt';
+  let questions=[];
+
+  if(kind==='cbt'){
+    const cards=$$('.question-editor',f);
+    questions=cards.map(c=>{
+      const inputs=$$('input',c);
+      const ta=c.querySelector('textarea');
+      return {
+        text:(ta?ta.value:'').trim(),
+        options:inputs.slice(0,4).map(x=>x.value.trim()),
+        answer:Number(c.querySelector('select')?.value||0)
+      };
+    });
+    if(!questions.length||questions.some(q=>!q.text||q.options.some(o=>!o)))
+      return toast('Fill in every question and all four options.',true);
+  }
+
+  let files=[];
+  const fi=f.elements.files;
+  if(fi&&fi.files&&fi.files.length){
+    files=await saveFiles(fi.files);
+    if(files===null)return;
+  }
+  if(kind==='html'&&!files.length)return toast('Attach the task file before publishing.',true);
+
+  const list=assignments();
+  list.push({
+    id:uid(),category:f.dataset.category||'assignment',title:String(v.title||'').trim(),subject:v.subject,cls:v.cls,
+    due:v.due,marks:Number(v.marks)||10,desc:String(v.desc||'').trim(),
+    kind,questions,files,teacherEmail:u.email,teacherName:u.fullname,
+    date:new Date().toISOString()
+  });
+  saveAssignments(list);
+  toast('Assignment published to '+v.cls+'.');
+  render();
+};
+
+F.resource=async f=>{
+  const u=me();
+  const v=Object.fromEntries(new FormData(f));
+  const files=await saveFiles(f.elements.files.files);
+  if(!files||!files.length)return;
+  const list=resources();
+  list.push({id:uid(),title:String(v.title||'').trim(),subject:v.subject,cls:v.cls,
+    desc:String(v.desc||'').trim(),files,teacherEmail:u.email,teacherName:u.fullname,
+    date:new Date().toISOString()});
+  saveResources(list);
+  toast('Resource uploaded.');
+  render();
+};
+
+F['submit-cbt']=f=>{
+  const u=me();
+  const aid=f.dataset.aid;
+  const a=assignments().find(x=>x.id===aid);
+  if(!a||a.kind!=='cbt')return toast('This assessment is no longer available.',true);
+  const fd=new FormData(f);
+  const qs=a.questions||[];
+  let correct=0;
+  const responses=qs.map((q,i)=>{
+    const sel=Number(fd.get('q_'+i));
+    const ok=sel===Number(q.answer);
+    if(ok)correct++;
+    return {selectedIndex:sel,correctIndex:Number(q.answer),correct:ok};
+  });
+  const score=qs.length?Math.round(correct/qs.length*Number(a.marks)*100)/100:0;
+  const all=subs();
+  const old=all.find(s=>s.aid===aid&&s.email===u.email);
+  const rec={id:old?old.id:uid(),aid,email:u.email,name:String(fd.get('studentName')||u.fullname).trim(),
+    cls:u.cls,kind:'cbt',responses,score,feedback:'Automatically marked: '+correct+' of '+qs.length+' correct.',
+    date:new Date().toISOString()};
+  if(old)all[all.indexOf(old)]=rec;else all.push(rec);
+  saveSubs(all);
+  toast('Submitted! Your score: '+score+'/'+a.marks);
+  render();
+};
+
+F['submit-theory']=async f=>{
+  const u=me();
+  const aid=f.dataset.aid;
+  const v=Object.fromEntries(new FormData(f));
+  let files=[];
+  if(f.elements.files&&f.elements.files.files.length){
+    files=await saveFiles(f.elements.files.files);
+    if(files===null)return;
+  }
+  const all=subs();
+  const old=all.find(s=>s.aid===aid&&s.email===u.email);
+  const rec={id:old?old.id:uid(),aid,email:u.email,
+    name:String(v.studentName||u.fullname).trim(),cls:u.cls,files,
+    answerText:String(v.answerText||'').trim(),kind:'theory',
+    date:new Date().toISOString(),score:null,feedback:''};
+  if(old){delFiles(old.files);all[all.indexOf(old)]=rec}else all.push(rec);
+  saveSubs(all);
+  toast('Answers sent to your teacher for marking.');
+  render();
+};
+
+F['submit-html']=async f=>{
+  const u=me();
+  const aid=f.dataset.aid;
+  const files=await saveFiles(f.elements.files.files);
+  if(!files||!files.length)return;
+  const all=subs();
+  const old=all.find(s=>s.aid===aid&&s.email===u.email);
+  const rec={id:old?old.id:uid(),aid,email:u.email,
+    name:String(f.elements.studentName?.value||u.fullname).trim(),cls:u.cls,files,
+    note:String(f.elements.note?.value||'').trim(),kind:'html',
+    date:new Date().toISOString(),score:null,feedback:''};
+  if(old){delFiles(old.files);all[all.indexOf(old)]=rec}else all.push(rec);
+  saveSubs(all);
+  toast('Work submitted successfully.');
+  render();
+};
+
+F['grade-sub']=f=>{
+  const all=subs();
+  const s=all.find(x=>x.id===f.dataset.sid);
+  if(!s)return;
+  const max=Number(f.dataset.max)||100;
+  const sc=Number(f.elements.score.value);
+  if(isNaN(sc)||sc<0||sc>max)return toast('Score must be between 0 and '+max+'.',true);
+  s.score=sc;
+  s.feedback=f.elements.feedback.value.trim();
+  saveSubs(all);
+  toast('Score saved.');
+  render();
+};
+
+F.grade=f=>{
+  const v=Object.fromEntries(new FormData(f));
+  const sc=Number(v.score);
+  if(isNaN(sc)||sc<0||sc>100)return toast('Score must be between 0 and 100.',true);
+  const g=grades();
+  const old=g.find(x=>x.email===v.email&&x.subject===v.subject);
+  if(old)old.score=sc;
+  else g.push({id:uid(),email:v.email,subject:v.subject,score:sc,date:new Date().toISOString()});
+  saveGrades(g);
+  toast('Result saved.');
+  render();
+};
+
+F.news=f=>{
+  const u=me();
+  const v=Object.fromEntries(new FormData(f));
+  const list=news();
+  list.unshift({id:uid(),title:String(v.title||'').trim(),body:String(v.body||'').trim(),
+    audience:v.audience,author:u.fullname,authorEmail:u.email,date:new Date().toISOString()});
+  saveNews(list);
+  toast('Announcement posted.');
+  render();
+};
+
+F.profile=async f=>{
+  const u=me();
+  const v=Object.fromEntries(new FormData(f));
+  let photo=(u.profile&&u.profile.photo)||null;
+  const pf=f.elements.photo.files[0];
+  if(pf){
+    const m=await saveFiles([pf],true);
+    if(!m)return;
+    if(photo)delFiles([photo]);
+    photo=m[0];
+  }
+  let sid=u.studentId||nextStudentId();
+  updateUser(u.email,x=>{
+    x.fullname=String(v.fullname||'').trim();
+    x.cls=v.cls;
+    x.studentId=sid;
+    x.profile={
+      dob:v.dob,gender:v.gender,country:v.country,state:v.state,
+      guardianName:v.guardianName,guardianPhone:v.guardianPhone,guardianEmail:v.guardianEmail,
+      address:v.address,goal:v.goal,photo,submittedAt:new Date().toISOString()
+    };
+  });
+  state.edit=false;
+  toast('Profile saved.');
+  render();
+};
+
+F['link-child']=f=>{
+  const v=Object.fromEntries(new FormData(f));
+  const email=String(v.email||'').trim().toLowerCase();
+  const sid=String(v.sid||'').trim();
+  const s=getUser(email);
+  if(!s||s.role!=='student')return toast('No student found with that email.',true);
+  if(!s.studentId)return toast('That student has not completed their profile yet.',true);
+  if(s.studentId.toLowerCase()!==sid.toLowerCase())return toast('Student ID does not match.',true);
+  const u=me();
+  if((u.children||[]).includes(email))return toast('Already linked.',true);
+  updateUser(u.email,x=>{x.children=(x.children||[]).concat(email)});
+  state.child=email;
+  toast(s.fullname+' linked.');
+  render();
+};
+
+F.codes=f=>{
+  const u=me();
+  if(!isMainAdmin(u))return toast('Only the main admin can change access codes.',true);
+  const v=Object.fromEntries(new FormData(f));
+  if(!String(v.teacherCode||'').trim()||!String(v.adminCode||'').trim())
+    return toast('Both codes are required.',true);
+  cfg.teacherCode=String(v.teacherCode).trim();
+  cfg.adminCode=String(v.adminCode).trim();
+  cfg.formEndpoint=String(v.formEndpoint||'').trim()||DEF.formEndpoint;
+  cfg.whatsapp=String(v.whatsapp||'').replace(/\D/g,'')||DEF.whatsapp;
+  cfg.supabaseUrl=String(v.supabaseUrl||'').trim();
+  cfg.supabaseKey=String(v.supabaseKey||'').trim();
+  saveCfg();
+  toast('Settings updated.');
+  render();
+};
+
+document.addEventListener('submit',e=>{
+  const f=e.target;
+  const h=F[f.dataset.form];
+  if(h){
+    e.preventDefault();
+    try{
+      const r=h(f);
+      if(r&&r.catch)r.catch(err=>{console.error(err);toast('Something went wrong. Please try again.',true)});
+    }catch(err){console.error(err);toast('Something went wrong. Please try again.',true)}
+  }
+});
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+(function init(){
+  // migrate old config
+  if(!cfg.mainAdminEmail)cfg.mainAdminEmail=DEF.mainAdminEmail;
+
+  // Main admin only (password stored as a hash). No demo accounts.
+  const MAIN='sonlineclasses01@gmail.com',MAINH='h1:47d50695650de99456b52908dc15f9f6d3bd858ff9af0526c2815e37c6173039';
+  cfg.mainAdminEmail=MAIN;saveCfg();
+  const all0=users().filter(x=>!(x.email==='admin@sonlineclasses.com'||(x.email==='teacher@sonlineclasses.com'&&x.password==='teacher123')));
+  const mu=all0.find(x=>x.email===MAIN);
+  if(mu){if(mu.role!=='admin'||!mu.password){mu.role='admin';mu.cls='';mu.password=MAINH}}
+  else all0.push({id:uid(),fullname:'Sonline Admin',email:MAIN,password:MAINH,role:'admin',cls:'',studentId:'',phone:(cfg.phones&&cfg.phones[0])||'',profile:null,children:[],created:new Date().toISOString()});
+  saveUsers(all0);
+
+  $('#foot').innerHTML=`© ${new Date().getFullYear()} Sonline Classes · `+
+    `<a href="mailto:${esc(cfg.email)}" style="color:#fde68a">${esc(cfg.email)}</a> · `+
+    cfg.phones.map(p=>`<a href="tel:${esc(p)}" style="color:#fde68a">${esc(p)}</a>`).join(' · ');
+
+  const u=me();
+  if(u){
+    state.page='dashboard';
+    state.tab=(TABS[u.role]||TABS.student)[0][0];
+  }else{
+    state.page='home';
+  }
+  render();
+})();
+</script>
+</body>
+</html>

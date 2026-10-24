@@ -275,7 +275,9 @@ function LSset(k,v){try{localStorage.setItem('son_'+k,JSON.stringify(v))}catch(e
 let cfg=Object.assign({},DEF,LSget('settings',{}));
 // persist config changes
 function saveCfg(){LSset('settings',cfg)}
-['formEndpoint','whatsapp','supabaseUrl','supabaseKey'].forEach(k=>{if(!cfg[k])cfg[k]=DEF[k]});
+['formEndpoint','whatsapp'].forEach(k=>{if(!cfg[k])cfg[k]=DEF[k]});
+// Supabase URL and key always come from the code above; saved settings can never override them
+cfg.supabaseUrl=DEF.supabaseUrl;cfg.supabaseKey=DEF.supabaseKey;
 
 /* Supabase (plain REST, no library needed). Only active once URL + key are filled in. */
 const sbOn=()=>/^https:\/\/.+/.test(String(cfg.supabaseUrl||''))&&!!String(cfg.supabaseKey||'').trim();
@@ -284,7 +286,7 @@ async function sbInsert(table,row){
   try{
     const r=await fetch(String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/'+table,{
       method:'POST',
-      headers:{'apikey':cfg.supabaseKey,'Authorization':'Bearer '+cfg.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:sbHeaders({'Prefer':'return=minimal'}),
       body:JSON.stringify(row)});
     return r.ok;
   }catch(e){return false}
@@ -292,12 +294,111 @@ async function sbInsert(table,row){
 const waNum=()=>String(cfg.whatsapp||(cfg.phones&&cfg.phones[0])||'').replace(/\D/g,'');
 
 const users=()=>LSget('users'),        saveUsers=v=>LSset('users',v);
-const assignments=()=>LSget('assignments'), saveAssignments=v=>LSset('assignments',v);
 const subs=()=>LSget('subs'),          saveSubs=v=>LSset('subs',v);
 const events=()=>LSget('events'),      saveEvents=v=>LSset('events',v);
-const news=()=>LSget('news'),          saveNews=v=>LSset('news',v);
 const resources=()=>LSget('resources'),saveResources=v=>LSset('resources',v);
-const grades=()=>LSget('grades'),      saveGrades=v=>LSset('grades',v);
+
+/* =========================================================================
+   SUPABASE DATA: assignments, grades, news
+   Each table has: id (text, primary key), data (jsonb), created_at (timestamptz).
+   Data is fetched from Supabase and saved back with async REST calls.
+   ========================================================================= */
+const SBT=['assignments','grades','news'];
+const DB={assignments:[],grades:[],news:[]};                          // in-memory copy loaded from Supabase
+const SYN={assignments:new Map(),grades:new Map(),news:new Map()};    // id -> JSON last confirmed by Supabase
+let sbLoaded=false,sbPending=0,sbQueue=Promise.resolve();
+const sbHeaders=x=>{const h={'apikey':cfg.supabaseKey,'Content-Type':'application/json'};if(/^eyJ/.test(String(cfg.supabaseKey||'')))h.Authorization='Bearer '+cfg.supabaseKey;return Object.assign(h,x||{})};
+const sbUrl=t=>String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/'+t;
+const sbSort=(t,a)=>a.slice().sort((x,y)=>{const p=String(x.date||''),q=String(y.date||'');return t==='news'?(p<q?1:p>q?-1:0):(p<q?-1:p>q?1:0)});
+
+async function sbFetch(table){
+  const out=[];
+  for(let off=0;;off+=1000){
+    const r=await fetch(sbUrl(table)+'?select=id,data&order=created_at.asc&limit=1000&offset='+off,{headers:sbHeaders()});
+    if(!r.ok)throw new Error(table+' fetch failed: '+r.status);
+    const rows=await r.json();
+    rows.forEach(x=>{if(x&&x.data&&typeof x.data==='object')out.push(Object.assign({},x.data,{id:x.id}))});
+    if(rows.length<1000)break;
+  }
+  return out;
+}
+async function sbPut(table,rows){
+  for(let i=0;i<rows.length;i+=50){
+    const r=await fetch(sbUrl(table)+'?on_conflict=id',{method:'POST',
+      headers:sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body:JSON.stringify(rows.slice(i,i+50).map(x=>({id:x.id,data:x})))});
+    if(!r.ok)throw new Error(table+' save failed: '+r.status);
+  }
+}
+async function sbDel(table,ids){
+  for(let i=0;i<ids.length;i+=50){
+    const r=await fetch(sbUrl(table)+'?id=in.('+ids.slice(i,i+50).map(encodeURIComponent).join(',')+')',{method:'DELETE',headers:sbHeaders({'Prefer':'return=minimal'})});
+    if(!r.ok)throw new Error(table+' delete failed: '+r.status);
+  }
+}
+async function sbLoad(quiet){
+  if(!sbOn())return false;
+  try{
+    const res=await Promise.all(SBT.map(sbFetch));
+    SBT.forEach((t,i)=>{const rows=sbSort(t,res[i]);DB[t]=rows;SYN[t]=new Map(rows.map(x=>[x.id,JSON.stringify(x)]))});
+    sbLoaded=true;return true;
+  }catch(e){console.error(e);if(!quiet)toast('Could not load data from the database.',true);return false}
+}
+/* Saves the full list: only new/changed records are upserted and removed records are deleted. Resolves true/false. */
+function sbSave(table,list){
+  DB[table]=list;
+  const snap=SYN[table];
+  const now=new Map(list.map(x=>[x.id,JSON.stringify(x)]));
+  const put=list.filter(x=>snap.get(x.id)!==now.get(x.id));
+  const del=Array.from(snap.keys()).filter(id=>!now.has(id));
+  if(!put.length&&!del.length)return Promise.resolve(true);
+  const rollback=()=>{DB[table]=sbSort(table,Array.from(snap.values()).map(v=>JSON.parse(v)));render()};
+  if(!sbOn()){toast('Database not connected. Add the Supabase URL and key in Admin > Settings.',true);rollback();return Promise.resolve(false)}
+  sbPending++;
+  const job=sbQueue.then(async()=>{
+    try{
+      if(put.length)await sbPut(table,put);
+      if(del.length)await sbDel(table,del);
+      put.forEach(x=>snap.set(x.id,now.get(x.id)));
+      del.forEach(id=>snap.delete(id));
+      return true;
+    }catch(e){
+      console.error(e);
+      toast('Could not save to the database. Please check your connection and try again.',true);
+      rollback();return false;
+    }finally{sbPending--}
+  });
+  sbQueue=job.catch(()=>{});
+  return job;
+}
+const assignments=()=>DB.assignments, saveAssignments=v=>sbSave('assignments',v);
+const grades=()=>DB.grades,           saveGrades=v=>sbSave('grades',v);
+const news=()=>DB.news,               saveNews=v=>sbSave('news',v);
+
+/* One-time move of any old browser-stored records into Supabase, then the old keys are removed. */
+async function sbMigrateLegacy(){
+  for(const t of SBT){
+    let old=null;try{old=JSON.parse(localStorage.getItem('son_'+t))}catch(e){}
+    if(Array.isArray(old)&&old.length){
+      const have=new Set(DB[t].map(x=>x.id));
+      const extra=old.filter(x=>x&&x.id&&!have.has(x.id));
+      if(extra.length&&!await sbSave(t,sbSort(t,DB[t].concat(extra))))return;
+    }
+    try{localStorage.removeItem('son_'+t)}catch(e){}
+  }
+}
+async function sbBoot(){
+  if(!sbOn()){toast('Database not connected. Add the Supabase URL and key in Admin > Settings.',true);return}
+  if(await sbLoad()){await sbMigrateLegacy();render()}
+}
+function sbRefresh(){
+  const a=document.activeElement,m=document.getElementById('modalRoot');
+  if(!sbLoaded||sbPending||document.hidden||(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(m&&m.innerHTML.trim()))return;
+  const sig=()=>SBT.map(t=>JSON.stringify(DB[t])).join('|'),before=sig();
+  sbLoad(true).then(ok=>{if(ok&&sig()!==before)render()});
+}
+document.addEventListener('visibilitychange',sbRefresh);
+setInterval(sbRefresh,60000);
 const lessons=()=>LSget('lessons'),    saveLessons=v=>LSset('lessons',v);
 const messages=()=>LSget('messages'),  saveMessages=v=>LSset('messages',v);
 
@@ -1402,8 +1503,6 @@ function usersHTML(u){
             <input name="adminCode" value="${esc(cfg.adminCode)}" required> <button type="button" class="btn sm o" data-act="copy" data-src="adminCode">📋 Copy</button></div>
           <div class="fg"><label>Contact-form email delivery URL (Formspree link that forwards to your Gmail)</label><input name="formEndpoint" value="${esc(cfg.formEndpoint||'')}" placeholder="https://formspree.io/f/xxxxxxxx"></div>
           <div class="fg"><label>WhatsApp number (country code, digits only)</label><input name="whatsapp" value="${esc(cfg.whatsapp||'')}" placeholder="2347037607137"></div>
-          <div class="fg"><label>Supabase project URL</label><input name="supabaseUrl" value="${esc(cfg.supabaseUrl||'')}" placeholder="https://xxxx.supabase.co"></div>
-          <div class="fg"><label>Supabase anon public key</label><input name="supabaseKey" value="${esc(cfg.supabaseKey||'')}" placeholder="eyJ..."></div>
         </div>
         <button class="btn" type="submit">💾 Save codes</button>
       </form>
@@ -1462,8 +1561,6 @@ function settingsHTML(u){
           <input name="adminCode" value="${esc(cfg.adminCode)}" required> <button type="button" class="btn sm o" data-act="copy" data-src="adminCode">📋 Copy</button></div>
           <div class="fg"><label>Contact-form email delivery URL (Formspree link that forwards to your Gmail)</label><input name="formEndpoint" value="${esc(cfg.formEndpoint||'')}" placeholder="https://formspree.io/f/xxxxxxxx"></div>
           <div class="fg"><label>WhatsApp number (country code, digits only)</label><input name="whatsapp" value="${esc(cfg.whatsapp||'')}" placeholder="2347037607137"></div>
-          <div class="fg"><label>Supabase project URL</label><input name="supabaseUrl" value="${esc(cfg.supabaseUrl||'')}" placeholder="https://xxxx.supabase.co"></div>
-          <div class="fg"><label>Supabase anon public key</label><input name="supabaseKey" value="${esc(cfg.supabaseKey||'')}" placeholder="eyJ..."></div>
       </div>
       <button class="btn" type="submit">💾 Save codes</button>
     </form>
@@ -2073,7 +2170,7 @@ F.assignment=async f=>{
     kind,questions,files,teacherEmail:u.email,teacherName:u.fullname,
     date:new Date().toISOString()
   });
-  saveAssignments(list);
+  if(!await saveAssignments(list))return;
   toast('Assignment published to '+v.cls+'.');
   render();
 };
@@ -2170,7 +2267,7 @@ F['grade-sub']=f=>{
   render();
 };
 
-F.grade=f=>{
+F.grade=async f=>{
   const v=Object.fromEntries(new FormData(f));
   const sc=Number(v.score);
   if(isNaN(sc)||sc<0||sc>100)return toast('Score must be between 0 and 100.',true);
@@ -2178,18 +2275,18 @@ F.grade=f=>{
   const old=g.find(x=>x.email===v.email&&x.subject===v.subject);
   if(old)old.score=sc;
   else g.push({id:uid(),email:v.email,subject:v.subject,score:sc,date:new Date().toISOString()});
-  saveGrades(g);
+  if(!await saveGrades(g))return;
   toast('Result saved.');
   render();
 };
 
-F.news=f=>{
+F.news=async f=>{
   const u=me();
   const v=Object.fromEntries(new FormData(f));
   const list=news();
   list.unshift({id:uid(),title:String(v.title||'').trim(),body:String(v.body||'').trim(),
     audience:v.audience,author:u.fullname,authorEmail:u.email,date:new Date().toISOString()});
-  saveNews(list);
+  if(!await saveNews(list))return;
   toast('Announcement posted.');
   render();
 };
@@ -2247,11 +2344,11 @@ F.codes=f=>{
   cfg.adminCode=String(v.adminCode).trim();
   cfg.formEndpoint=String(v.formEndpoint||'').trim()||DEF.formEndpoint;
   cfg.whatsapp=String(v.whatsapp||'').replace(/\D/g,'')||DEF.whatsapp;
-  cfg.supabaseUrl=String(v.supabaseUrl||'').trim();
-  cfg.supabaseKey=String(v.supabaseKey||'').trim();
+  cfg.supabaseUrl=DEF.supabaseUrl;cfg.supabaseKey=DEF.supabaseKey;
   saveCfg();
   toast('Settings updated.');
   render();
+  sbBoot();
 };
 
 document.addEventListener('submit',e=>{
@@ -2294,6 +2391,7 @@ document.addEventListener('submit',e=>{
     state.page='home';
   }
   render();
+  sbBoot();
 })();
 </script>
 </body>

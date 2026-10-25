@@ -293,7 +293,7 @@ async function sbInsert(table,row){
 }
 const waNum=()=>String(cfg.whatsapp||(cfg.phones&&cfg.phones[0])||'').replace(/\D/g,'');
 
-const users=()=>LSget('users'),        saveUsers=v=>LSset('users',v);
+const users=()=>DB.users,              saveUsers=v=>authSaveUsers(v);
 const subs=()=>DB.subs,                saveSubs=v=>sbSave('subs',v);
 const events=()=>DB.events,            saveEvents=v=>sbSave('events',v);
 const resources=()=>DB.resources,      saveResources=v=>sbSave('resources',v);
@@ -304,10 +304,11 @@ const resources=()=>DB.resources,      saveResources=v=>sbSave('resources',v);
    Data is fetched from Supabase and saved back with async REST calls.
    ========================================================================= */
 const SBT=['assignments','grades','news','subs','events','resources','lessons','messages'];
-const DB={assignments:[],grades:[],news:[],subs:[],events:[],resources:[],lessons:[],messages:[]};                          // in-memory copy loaded from Supabase
+const DB={users:[],assignments:[],grades:[],news:[],subs:[],events:[],resources:[],lessons:[],messages:[]};                          // in-memory copy loaded from Supabase
 const SYN={assignments:new Map(),grades:new Map(),news:new Map(),subs:new Map(),events:new Map(),resources:new Map(),lessons:new Map(),messages:new Map()};    // id -> JSON last confirmed by Supabase
 let sbLoaded=false,sbPending=0,sbQueue=Promise.resolve();
-const sbHeaders=x=>{const h={'apikey':cfg.supabaseKey,'Content-Type':'application/json'};if(/^eyJ/.test(String(cfg.supabaseKey||'')))h.Authorization='Bearer '+cfg.supabaseKey;return Object.assign(h,x||{})};
+const AUTH={s:null};try{AUTH.s=JSON.parse(localStorage.getItem('son_auth'))}catch(e){}
+const sbHeaders=x=>{const h={'apikey':cfg.supabaseKey,'Content-Type':'application/json'};const t=AUTH.s&&AUTH.s.access_token;if(t)h.Authorization='Bearer '+t;else if(/^eyJ/.test(String(cfg.supabaseKey||'')))h.Authorization='Bearer '+cfg.supabaseKey;return Object.assign(h,x||{})};
 const SBTABLE={assignments:'Assignment',grades:'Grades',news:'Announcement',subs:'Submissions',events:'Events',resources:'Resources',lessons:'Lessons',messages:'Messages'}; // your Supabase table names
 const sbUrl=t=>String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/'+(SBTABLE[t]||t);
 const sbSort=(t,a)=>a.slice().sort((x,y)=>{const p=String(x.date||''),q=String(y.date||'');return t==='news'?(p<q?1:p>q?-1:0):(p<q?-1:p>q?1:0)});
@@ -326,7 +327,7 @@ async function sbFetch(table){
 async function sbPut(table,rows){
   for(let i=0;i<rows.length;i+=50){
     const r=await fetch(sbUrl(table)+'?on_conflict=rid',{method:'POST',
-      headers:sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      headers:sbHeaders({'Prefer':(table==='messages'?'resolution=ignore-duplicates':'resolution=merge-duplicates')+',return=minimal'}),
       body:JSON.stringify(rows.slice(i,i+50).map(x=>({rid:x.id,data:x})))});
     if(!r.ok)throw new Error(table+' save failed: '+r.status);
   }
@@ -340,6 +341,7 @@ async function sbDel(table,ids){
 async function sbLoad(quiet){
   if(!sbOn())return false;
   try{
+    await authFresh();
     const res=await Promise.all(SBT.map(sbFetch));
     SBT.forEach((t,i)=>{const rows=sbSort(t,res[i]);DB[t]=rows;SYN[t]=new Map(rows.map(x=>[x.id,JSON.stringify(x)]))});
     sbLoaded=true;return true;
@@ -358,6 +360,7 @@ function sbSave(table,list){
   sbPending++;
   const job=sbQueue.then(async()=>{
     try{
+      await authFresh();
       if(put.length)await sbPut(table,put);
       if(del.length)await sbDel(table,del);
       put.forEach(x=>snap.set(x.id,now.get(x.id)));
@@ -390,16 +393,81 @@ async function sbMigrateLegacy(){
 }
 async function sbBoot(){
   if(!sbOn()){toast('Database not connected. Add the Supabase URL and key in Admin > Settings.',true);return}
-  if(await sbLoad()){await sbMigrateLegacy();render()}
+  await authFresh();
+  if(AUTH.s)await authLoadUsers();
+  if(await sbLoad()){
+    if(AUTH.s&&me()&&isStaff(me()))await sbMigrateLegacy();
+    const u=me();if(u&&state.page==='home'){state.page='dashboard';state.tab=(TABS[u.role]||TABS.student)[0][0]}
+    render();
+  }
 }
 function sbRefresh(){
   const a=document.activeElement,m=document.getElementById('modalRoot');
   if(!sbLoaded||sbPending||document.hidden||(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(m&&m.innerHTML.trim()))return;
   const sig=()=>SBT.map(t=>JSON.stringify(DB[t])).join('|'),before=sig();
-  sbLoad(true).then(ok=>{if(ok&&sig()!==before)render()});
+  Promise.all([sbLoad(true),authLoadUsers()]).then(r=>{if(r[0]&&sig()!==before)render()});
 }
 document.addEventListener('visibilitychange',sbRefresh);
 setInterval(sbRefresh,60000);
+
+/* =========================================================================
+   SECURE LOGIN (Supabase Auth). People log in to the database, not to their own phone.
+   ========================================================================= */
+const authUrl=p=>String(cfg.supabaseUrl).replace(/\/+$/,'')+'/auth/v1/'+p;
+function authSet(x){AUTH.s=x;try{x?localStorage.setItem('son_auth',JSON.stringify(x)):localStorage.removeItem('son_auth')}catch(e){}}
+function authKeep(j){authSet({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),uid:(j.user&&j.user.id)||(AUTH.s&&AUTH.s.uid)})}
+async function authCall(path,body){
+  const r=await fetch(authUrl(path),{method:'POST',headers:{'apikey':cfg.supabaseKey,'Content-Type':'application/json'},body:JSON.stringify(body||{})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'Request failed');
+  return j;
+}
+async function authFresh(){
+  if(!AUTH.s||AUTH.s.expires_at-Math.floor(Date.now()/1000)>120)return;
+  try{authKeep(await authCall('token?grant_type=refresh_token',{refresh_token:AUTH.s.refresh_token}))}catch(e){authSet(null)}
+}
+async function sbRpc(name,args){
+  await authFresh();
+  const r=await fetch(String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/rpc/'+name,{method:'POST',headers:sbHeaders(),body:JSON.stringify(args||{})});
+  const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
+  if(!r.ok)throw new Error((j&&(j.message||j.msg))||'Request failed');
+  return j;
+}
+const SU=new Map();
+const uClean=u=>{const c=Object.assign({},u);['loginCount','lastLogin','lastSeen','password'].forEach(k=>delete c[k]);return c};
+async function authLoadUsers(){
+  if(!AUTH.s||!sbOn()){DB.users=[];return false}
+  try{
+    await authFresh();
+    const r=await fetch(String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/Users?select=rid,email,full_name,role,class,login_count,last_login_at,last_seen_at,data&order=created_at.asc&limit=1000',{headers:sbHeaders()});
+    if(!r.ok)throw new Error('users '+r.status);
+    const rows=await r.json();
+    DB.users=rows.map(x=>Object.assign({},x.data||{},{id:x.rid,email:x.email,fullname:x.full_name||(x.data&&x.data.fullname)||x.email,role:x.role,cls:x.class||'',loginCount:x.login_count||0,lastLogin:x.last_login_at,lastSeen:x.last_seen_at}));
+    SU.clear();DB.users.forEach(u=>SU.set(u.id,JSON.stringify(uClean(u))));
+    const m=me();
+    if(m&&m.role==='admin'){
+      const rc=await fetch(String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/Settings?rid=eq.codes&select=data',{headers:sbHeaders()});
+      if(rc.ok){const c=await rc.json();if(c[0]&&c[0].data){cfg.teacherCode=c[0].data.teacherCode||cfg.teacherCode;cfg.adminCode=c[0].data.adminCode||cfg.adminCode}}
+    }
+    return true;
+  }catch(e){console.error(e);return false}
+}
+function authSaveUsers(list){
+  DB.users=list;
+  list.forEach(u=>{
+    const j=JSON.stringify(uClean(u));
+    if(SU.get(u.id)===j)return;
+    SU.set(u.id,j);
+    sbQueue=sbQueue.then(async()=>{
+      try{await authFresh();const r=await fetch(String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/Users?rid=eq.'+encodeURIComponent(u.id),{method:'PATCH',headers:sbHeaders({'Prefer':'return=minimal'}),body:JSON.stringify({data:uClean(u),full_name:u.fullname,class:u.cls||'',phone:u.phone||''})});if(!r.ok)throw new Error('save '+r.status)}
+      catch(e){console.error(e);toast('Could not save the profile. Please try again.',true)}
+    });
+  });
+}
+const onlineNow=u=>u.lastSeen&&Date.now()-new Date(u.lastSeen).getTime()<5*60*1000;
+const fmtWhen=d=>d?new Date(d).toLocaleString([], {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'never';
+setInterval(()=>{if(AUTH.s&&!document.hidden)sbRpc('heartbeat').catch(()=>{})},60000);
+
 const lessons=()=>DB.lessons,          saveLessons=v=>sbSave('lessons',v);
 const messages=()=>DB.messages,        saveMessages=v=>sbSave('messages',v);
 
@@ -443,7 +511,7 @@ function birthdaySoon(dob,days=14){
 /* =========================================================================
    SESSION
    ========================================================================= */
-const me=()=>{const s=LSget('session',null);return s?users().find(u=>u.email===s.email)||null:null};
+const me=()=>AUTH.s?DB.users.find(u=>u.id===AUTH.s.uid)||null:null;
 const getUser=e=>users().find(u=>u.email===e);
 const isStaff=u=>!!u&&(u.role==='teacher'||u.role==='admin');
 const isMainAdmin=u=>u&&u.email===cfg.mainAdminEmail;
@@ -1509,7 +1577,14 @@ function usersHTML(u){
       </form>
     </div>`:'';
 
+  const cnt=r=>all.filter(x=>x.role===r).length,online=all.filter(onlineNow);
+  const statsCard=`<div class="card"><h3>📊 Who is on SONLINE</h3>
+    <p><b>${all.length}</b> registered · 🎓 ${cnt('student')} students · 🧑‍🏫 ${cnt('teacher')} teachers · 👪 ${cnt('parent')} parents · 🛡 ${cnt('admin')} admins</p>
+    <p><b>${all.filter(x=>x.loginCount>0).length}</b> have logged in · <b>${online.length}</b> online now (active in the last 5 minutes)</p>
+    ${online.length?`<p class="mut small">Online: ${online.map(x=>esc(x.fullname)+' ('+x.role+')').join(', ')}</p>`:''}
+    <button class="btn sm r" data-act="clear-logins">Clear login history</button></div>`;
   return `<h2>👥 Users <span class="badge">${all.length}</span></h2>
+  ${statsCard}
   ${resetCodeForm}
   <div class="card">
     <h3>Admin accounts (${admins.length}/2)</h3>
@@ -1526,13 +1601,15 @@ function usersHTML(u){
 
   <div class="card">
     <div class="tw"><table class="tbl">
-      <tr><th>Name</th><th>Email</th><th>Role</th><th>Class</th><th></th></tr>
+      <tr><th>Name</th><th>Email</th><th>Role</th><th>Class</th><th>Last login</th><th>Logins</th><th></th></tr>
       ${all.map(x=>`<tr>
         <td>${esc(x.fullname)} ${isMainAdmin(x)?'<span class="badge ok">Main</span>':''}</td>
         <td>${esc(x.email)}</td>
         <td><span class="badge">${cap(x.role)}</span></td>
         <td>${esc(x.cls||'—')}</td>
+        <td>${onlineNow(x)?'🟢 ':''}${fmtWhen(x.lastLogin)}</td><td>${x.loginCount||0}</td>
         <td>
+          <button class="btn sm o" data-act="view-profile" data-email="${esc(x.email)}">Profile</button>
           <button class="btn sm o" data-act="reset-pw" data-email="${esc(x.email)}">Reset password</button>
           ${x.email!==u.email&&!isMainAdmin(x)?`<button class="btn sm r" data-act="del-user" data-email="${esc(x.email)}">🗑</button>`:''}
         </td>
@@ -1842,7 +1919,7 @@ A.bounce=el=>{el.classList.remove('b');void el.offsetWidth;el.classList.add('b')
 A.portal=()=>go(me()?'dashboard':'auth');
 A['go-register']=()=>{state.authMode='register';go('auth')};
 A['go-login']=()=>{state.authMode='login';go('auth')};
-A.logout=()=>{LSset('session',null);state.page='home';state.tab='overview';render();toast('Logged out. See you soon!')};
+A.logout=()=>{try{fetch(authUrl('logout'),{method:'POST',headers:sbHeaders()})}catch(e){}authSet(null);DB.users=[];SBT.forEach(t=>{DB[t]=[]});state.page='home';state.tab='overview';render();toast('Logged out. See you soon!')};
 A.tab=el=>{state.tab=el.dataset.tab;state.edit=false;render();window.scrollTo({top:0,behavior:'smooth'})};
 A.back=()=>{state.cur=null;render()};
 async function copyText(t,msg){
@@ -1934,25 +2011,21 @@ A['reset-pw']=async el=>{
   const p=prompt('New password (min 6 characters) for '+el.dataset.email);
   if(p==null)return;
   if(p.length<6)return toast('Password too short.',true);
-  const hp=await pwHash(el.dataset.email,p);updateUser(el.dataset.email,x=>{x.password=hp});
-  toast('Password updated.');
+  try{await sbRpc('admin_set_password',{p_email:el.dataset.email,p_pw:p});toast('Password updated.')}catch(e){toast(e.message,true)}
 };
-A['del-user']=el=>{
+A['clear-logins']=async()=>{if(!confirm('Clear the login history and counts?'))return;try{await sbRpc('admin_clear_logins');await authLoadUsers();toast('Login history cleared.');render()}catch(e){toast(e.message,true)}};
+A['del-user']=async el=>{
   const em=el.dataset.email,cu=me();
   if(em===cu.email)return toast('You cannot delete your own account.',true);
   const target=getUser(em);
   if(!target)return toast('User not found.',true);
   if(isMainAdmin(target))return toast('The main admin account cannot be deleted.',true);
-  if(target.role==='admin'){
-    // extra admin can only be deleted by main admin
-    if(!isMainAdmin(cu))return toast('Only the main admin can delete an admin account.',true);
-  }
   if(!confirm('Delete '+em+' and all their work?'))return;
   subs().filter(s=>s.email===em).forEach(s=>delFiles(s.files));
-  saveSubs(subs().filter(s=>s.email!==em));
-  saveGrades(grades().filter(g=>g.email!==em));
-  saveUsers(users().filter(x=>x.email!==em));
-  toast('User deleted.');render();
+  await saveSubs(subs().filter(s=>s.email!==em));
+  await saveGrades(grades().filter(g=>g.email!==em));
+  try{await sbRpc('admin_delete_user',{p_email:em});await authLoadUsers();toast('User deleted.')}catch(e){toast(e.message,true)}
+  render();
 };
 
 window.addEventListener('message',e=>{
@@ -2028,16 +2101,17 @@ const F={};
 F.login=async f=>{
   const v=Object.fromEntries(new FormData(f));
   const email=String(v.email||'').trim().toLowerCase();
-  const u=getUser(email);
-  if(!u)return toast('Account not found. Please register first.',true);
-  if(!(await pwOk(u,String(v.password||''))))return toast('Incorrect password.',true);
-  if(!String(u.password).startsWith('h1:')){const hp=await pwHash(u.email,String(v.password));updateUser(u.email,x=>{x.password=hp})}
-  LSset('session',{email:u.email});
+  try{authKeep(await authCall('token?grant_type=password',{email,password:String(v.password||'')}))}
+  catch(e){return toast(/invalid/i.test(e.message)?'Incorrect email or password.':'Login failed: '+e.message,true)}
+  try{await sbRpc('touch_login')}catch(e){}
+  await authLoadUsers();await sbLoad(true);
+  const u=me();
+  if(!u){authSet(null);return toast('Your account profile was not found. Please register again.',true)}
   f.reset();
   state.tab=(TABS[u.role]||TABS.student)[0][0];
   state.page='dashboard';
   render();
-  toast('Welcome back, '+u.fullname.split(' ')[0]+'!');
+  toast('Welcome back, '+String(u.fullname||'').split(' ')[0]+'!');
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
@@ -2047,35 +2121,19 @@ F.register=async f=>{
   const role=v.role;
   if(!v.fullname||!email||!v.phone)return toast('Please fill in every field.',true);
   if(String(v.password||'').length<6)return toast('Password must be at least 6 characters.',true);
-  if(getUser(email))return toast('That email is already registered.',true);
-
-  if(role==='admin')return toast('Admin accounts can only be created by the main admin.',true);
-  if(role==='teacher'&&v.code!==cfg.teacherCode)return toast('Wrong teacher access code. Ask the admin.',true);
-  if(role==='admin'){
-    if(v.code!==cfg.adminCode)return toast('Wrong admin access code.',true);
-    const admins=users().filter(x=>x.role==='admin');
-    if(admins.length>=2)return toast('There can only be one main admin and one extra admin. No more admin accounts can be created.',true);
-  }
-
-  const all=users();
-  let children=[];
-  if(role==='parent'){
-    const ce=String(v.childEmail||'').trim().toLowerCase();
-    const child=all.find(x=>x.email===ce&&x.role==='student');
-    if(!child)return toast('No student is registered with that email yet. Ask your child to register first.',true);
-    children=[ce];
-  }
-
-  const rec={
-    id:uid(),fullname:String(v.fullname).trim(),email,password:await pwHash(email,String(v.password)),
-    role,cls:role==='student'?v.cls:'',
-    studentId:role==='student'?nextStudentId():'',
-    phone:String(v.phone).trim(),profile:null,children,
-    created:new Date().toISOString()
-  };
-  all.push(rec);saveUsers(all);
-  LSset('session',{email});
-  state.tab=(TABS[role]||TABS.student)[0][0];
+  if(role==='admin'&&email!==cfg.mainAdminEmail&&!(await sbRpc('check_code',{p_role:'admin',p_code:String(v.code||'')}).catch(()=>false)))return toast('Wrong admin access code, or two admins already exist.',true);
+  if(role==='teacher'&&!(await sbRpc('check_code',{p_role:'teacher',p_code:String(v.code||'')}).catch(()=>false)))return toast('Wrong teacher access code. Ask the admin.',true);
+  if(role==='parent'&&!(await sbRpc('student_exists',{p_email:String(v.childEmail||'').trim()}).catch(()=>false)))return toast('No student is registered with that email yet. Ask your child to register first.',true);
+  let j;
+  try{j=await authCall('signup',{email,password:String(v.password),data:{fullname:String(v.fullname).trim(),phone:String(v.phone).trim(),role,cls:role==='student'?v.cls:'',code:String(v.code||''),childEmail:String(v.childEmail||'').trim().toLowerCase()}})}
+  catch(e){return toast(/already/i.test(e.message)?'That email is already registered.':'Could not register: '+e.message,true)}
+  if(!j.access_token)return toast('Account created. Check your email and confirm it, then log in.');
+  authKeep(j);
+  try{await sbRpc('touch_login')}catch(e){}
+  await authLoadUsers();await sbLoad(true);
+  const u=me();
+  if(!u)return toast('Account created. Please log in.');
+  state.tab=(TABS[u.role]||TABS.student)[0][0];
   state.page='dashboard';
   render();
   toast('Welcome to Sonline Classes! 🎉');
@@ -2319,23 +2377,15 @@ F.profile=async f=>{
   render();
 };
 
-F['link-child']=f=>{
+F['link-child']=async f=>{
   const v=Object.fromEntries(new FormData(f));
   const email=String(v.email||'').trim().toLowerCase();
-  const sid=String(v.sid||'').trim();
-  const s=getUser(email);
-  if(!s||s.role!=='student')return toast('No student found with that email.',true);
-  if(!s.studentId)return toast('That student has not completed their profile yet.',true);
-  if(s.studentId.toLowerCase()!==sid.toLowerCase())return toast('Student ID does not match.',true);
-  const u=me();
-  if((u.children||[]).includes(email))return toast('Already linked.',true);
-  updateUser(u.email,x=>{x.children=(x.children||[]).concat(email)});
-  state.child=email;
-  toast(s.fullname+' linked.');
-  render();
+  try{const name=await sbRpc('link_child',{p_email:email,p_sid:String(v.sid||'').trim()});await authLoadUsers();state.child=email;toast(name+' linked.');render()}
+  catch(e){toast(e.message,true)}
 };
 
 F.codes=f=>{
+  try{const v0=Object.fromEntries(new FormData(f));if(isMainAdmin(me()))fetch(String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/Settings?rid=eq.codes',{method:'PATCH',headers:sbHeaders({'Prefer':'return=minimal'}),body:JSON.stringify({data:{teacherCode:String(v0.teacherCode||'').trim(),adminCode:String(v0.adminCode||'').trim()}})})}catch(e){}
   const u=me();
   if(!isMainAdmin(u))return toast('Only the main admin can change access codes.',true);
   const v=Object.fromEntries(new FormData(f));
@@ -2371,14 +2421,7 @@ document.addEventListener('submit',e=>{
   // migrate old config
   if(!cfg.mainAdminEmail)cfg.mainAdminEmail=DEF.mainAdminEmail;
 
-  // Main admin only (password stored as a hash). No demo accounts.
-  const MAIN='sonlineclasses01@gmail.com',MAINH='h1:47d50695650de99456b52908dc15f9f6d3bd858ff9af0526c2815e37c6173039';
-  cfg.mainAdminEmail=MAIN;saveCfg();
-  const all0=users().filter(x=>!(x.email==='admin@sonlineclasses.com'||(x.email==='teacher@sonlineclasses.com'&&x.password==='teacher123')));
-  const mu=all0.find(x=>x.email===MAIN);
-  if(mu){if(mu.role!=='admin'||!mu.password){mu.role='admin';mu.cls='';mu.password=MAINH}}
-  else all0.push({id:uid(),fullname:'Sonline Admin',email:MAIN,password:MAINH,role:'admin',cls:'',studentId:'',phone:(cfg.phones&&cfg.phones[0])||'',profile:null,children:[],created:new Date().toISOString()});
-  saveUsers(all0);
+  cfg.mainAdminEmail='sonlineclasses01@gmail.com';saveCfg();
 
   $('#foot').innerHTML=`© ${new Date().getFullYear()} Sonline Classes · `+
     `<a href="mailto:${esc(cfg.email)}" style="color:#fde68a">${esc(cfg.email)}</a> · `+

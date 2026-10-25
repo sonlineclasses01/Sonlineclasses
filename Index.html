@@ -294,21 +294,21 @@ async function sbInsert(table,row){
 const waNum=()=>String(cfg.whatsapp||(cfg.phones&&cfg.phones[0])||'').replace(/\D/g,'');
 
 const users=()=>LSget('users'),        saveUsers=v=>LSset('users',v);
-const subs=()=>LSget('subs'),          saveSubs=v=>LSset('subs',v);
-const events=()=>LSget('events'),      saveEvents=v=>LSset('events',v);
-const resources=()=>LSget('resources'),saveResources=v=>LSset('resources',v);
+const subs=()=>DB.subs,                saveSubs=v=>sbSave('subs',v);
+const events=()=>DB.events,            saveEvents=v=>sbSave('events',v);
+const resources=()=>DB.resources,      saveResources=v=>sbSave('resources',v);
 
 /* =========================================================================
    SUPABASE DATA: assignments, grades, news
    Each table has: id (text, primary key), data (jsonb), created_at (timestamptz).
    Data is fetched from Supabase and saved back with async REST calls.
    ========================================================================= */
-const SBT=['assignments','grades','news'];
-const DB={assignments:[],grades:[],news:[]};                          // in-memory copy loaded from Supabase
-const SYN={assignments:new Map(),grades:new Map(),news:new Map()};    // id -> JSON last confirmed by Supabase
+const SBT=['assignments','grades','news','subs','events','resources','lessons','messages'];
+const DB={assignments:[],grades:[],news:[],subs:[],events:[],resources:[],lessons:[],messages:[]};                          // in-memory copy loaded from Supabase
+const SYN={assignments:new Map(),grades:new Map(),news:new Map(),subs:new Map(),events:new Map(),resources:new Map(),lessons:new Map(),messages:new Map()};    // id -> JSON last confirmed by Supabase
 let sbLoaded=false,sbPending=0,sbQueue=Promise.resolve();
 const sbHeaders=x=>{const h={'apikey':cfg.supabaseKey,'Content-Type':'application/json'};if(/^eyJ/.test(String(cfg.supabaseKey||'')))h.Authorization='Bearer '+cfg.supabaseKey;return Object.assign(h,x||{})};
-const SBTABLE={assignments:'Assignment',grades:'Grades',news:'Announcement'}; // your Supabase table names
+const SBTABLE={assignments:'Assignment',grades:'Grades',news:'Announcement',subs:'Submissions',events:'Events',resources:'Resources',lessons:'Lessons',messages:'Messages'}; // your Supabase table names
 const sbUrl=t=>String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/'+(SBTABLE[t]||t);
 const sbSort=(t,a)=>a.slice().sort((x,y)=>{const p=String(x.date||''),q=String(y.date||'');return t==='news'?(p<q?1:p>q?-1:0):(p<q?-1:p>q?1:0)});
 
@@ -400,8 +400,8 @@ function sbRefresh(){
 }
 document.addEventListener('visibilitychange',sbRefresh);
 setInterval(sbRefresh,60000);
-const lessons=()=>LSget('lessons'),    saveLessons=v=>LSset('lessons',v);
-const messages=()=>LSget('messages'),  saveMessages=v=>LSset('messages',v);
+const lessons=()=>DB.lessons,          saveLessons=v=>sbSave('lessons',v);
+const messages=()=>DB.messages,        saveMessages=v=>sbSave('messages',v);
 
 /* =========================================================================
    SMALL HELPERS

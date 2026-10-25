@@ -308,31 +308,32 @@ const DB={assignments:[],grades:[],news:[]};                          // in-memo
 const SYN={assignments:new Map(),grades:new Map(),news:new Map()};    // id -> JSON last confirmed by Supabase
 let sbLoaded=false,sbPending=0,sbQueue=Promise.resolve();
 const sbHeaders=x=>{const h={'apikey':cfg.supabaseKey,'Content-Type':'application/json'};if(/^eyJ/.test(String(cfg.supabaseKey||'')))h.Authorization='Bearer '+cfg.supabaseKey;return Object.assign(h,x||{})};
-const sbUrl=t=>String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/'+t;
+const SBTABLE={assignments:'Assignment',grades:'Grades',news:'Announcement'}; // your Supabase table names
+const sbUrl=t=>String(cfg.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/'+(SBTABLE[t]||t);
 const sbSort=(t,a)=>a.slice().sort((x,y)=>{const p=String(x.date||''),q=String(y.date||'');return t==='news'?(p<q?1:p>q?-1:0):(p<q?-1:p>q?1:0)});
 
 async function sbFetch(table){
   const out=[];
   for(let off=0;;off+=1000){
-    const r=await fetch(sbUrl(table)+'?select=id,data&order=created_at.asc&limit=1000&offset='+off,{headers:sbHeaders()});
+    const r=await fetch(sbUrl(table)+'?select=rid,data&order=created_at.asc&limit=1000&offset='+off,{headers:sbHeaders()});
     if(!r.ok)throw new Error(table+' fetch failed: '+r.status);
     const rows=await r.json();
-    rows.forEach(x=>{if(x&&x.data&&typeof x.data==='object')out.push(Object.assign({},x.data,{id:x.id}))});
+    rows.forEach(x=>{if(x&&x.data&&typeof x.data==='object')out.push(Object.assign({},x.data,{id:x.rid}))});
     if(rows.length<1000)break;
   }
   return out;
 }
 async function sbPut(table,rows){
   for(let i=0;i<rows.length;i+=50){
-    const r=await fetch(sbUrl(table)+'?on_conflict=id',{method:'POST',
+    const r=await fetch(sbUrl(table)+'?on_conflict=rid',{method:'POST',
       headers:sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
-      body:JSON.stringify(rows.slice(i,i+50).map(x=>({id:x.id,data:x})))});
+      body:JSON.stringify(rows.slice(i,i+50).map(x=>({rid:x.id,data:x})))});
     if(!r.ok)throw new Error(table+' save failed: '+r.status);
   }
 }
 async function sbDel(table,ids){
   for(let i=0;i<ids.length;i+=50){
-    const r=await fetch(sbUrl(table)+'?id=in.('+ids.slice(i,i+50).map(encodeURIComponent).join(',')+')',{method:'DELETE',headers:sbHeaders({'Prefer':'return=minimal'})});
+    const r=await fetch(sbUrl(table)+'?rid=in.('+ids.slice(i,i+50).map(encodeURIComponent).join(',')+')',{method:'DELETE',headers:sbHeaders({'Prefer':'return=minimal'})});
     if(!r.ok)throw new Error(table+' delete failed: '+r.status);
   }
 }

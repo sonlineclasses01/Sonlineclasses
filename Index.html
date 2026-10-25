@@ -514,64 +514,88 @@ function birthdaySoon(dob,days=14){
 const me=()=>AUTH.s?DB.users.find(u=>u.id===AUTH.s.uid)||null:null;
 const getUser=e=>users().find(u=>u.email===e);
 const isStaff=u=>!!u&&(u.role==='teacher'||u.role==='admin');
+const profileDone=u=>!!(u&&u.profile&&u.profile.dob&&u.profile.gender&&u.profile.guardianName&&u.profile.guardianPhone&&u.profile.address);
 const isMainAdmin=u=>u&&u.email===cfg.mainAdminEmail;
-async function pwHash(email,pw){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('sonline|'+String(email).toLowerCase()+'|'+pw));return 'h1:'+[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function pwOk(u,pw){return u.password&&String(u.password).startsWith('h1:')?u.password===await pwHash(u.email,pw):u.password===pw}
 function updateUser(email,fn){
   const all=users();const u=all.find(x=>x.email===email);
   if(u){fn(u);saveUsers(all)}
 }
 
 /* =========================================================================
-   FILE STORAGE (IndexedDB)
+   FILE STORAGE (Supabase Storage bucket "files": works on every device)
+   Files uploaded before this update were kept only on the uploading device;
+   openFile() still falls back to that old local copy when it exists.
    ========================================================================= */
+const BUCKET='files';
+const stUrl=p=>String(cfg.supabaseUrl).replace(/\/+$/,'')+'/storage/v1/object/'+p;
+const stPublic=path=>stUrl('public/'+BUCKET+'/'+path.split('/').map(encodeURIComponent).join('/'));
+const safeName=n=>String(n||'file').replace(/[^A-Za-z0-9._-]+/g,'_').replace(/^\.+/,'').slice(-90)||'file';
+/* legacy device-only store (read-only, so old uploads on the same device still open) */
 let _db;
 function idb(){
   return _db||(_db=new Promise((res,rej)=>{
     if(!window.indexedDB){_db=null;return rej(new Error('IndexedDB unavailable'))}
-    // open WITHOUT forcing a version so an existing newer database (version 2+) still works
-    const open=v=>{
-      const r=v?indexedDB.open('sonline_files',v):indexedDB.open('sonline_files');
-      r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('files'))r.result.createObjectStore('files',{keyPath:'id'})};
-      r.onsuccess=()=>{
-        const d=r.result;
-        if(!d.objectStoreNames.contains('files')){const nv=d.version+1;d.close();open(nv);return}
-        d.onversionchange=()=>{d.close();_db=null};
-        res(d);
-      };
-      r.onerror=()=>{_db=null;rej(r.error)};
-    };
-    open();
+    const r=indexedDB.open('sonline_files');
+    r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('files'))r.result.createObjectStore('files',{keyPath:'id'})};
+    r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();_db=null};res(d)};
+    r.onerror=()=>{_db=null;rej(r.error)};
   }));
 }
-async function putFile(file){
-  const id=uid();const d=await idb();
-  await new Promise((res,rej)=>{
-    const t=d.transaction('files','readwrite');
-    t.objectStore('files').put({id,name:file.name,type:file.type,blob:file});
-    t.oncomplete=res;t.onerror=()=>rej(t.error);
-  });
-  return {id,name:file.name,type:file.type||'',size:file.size};
+async function getLocalFile(id){
+  try{
+    const d=await idb();
+    if(!d.objectStoreNames.contains('files'))return null;
+    return await new Promise((res,rej)=>{
+      const q=d.transaction('files').objectStore('files').get(id);
+      q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error);
+    });
+  }catch(e){return null}
 }
-async function getFile(id){
-  const d=await idb();
-  return new Promise((res,rej)=>{
-    const q=d.transaction('files').objectStore('files').get(id);
-    q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);
-  });
+/* uploads one file to the cloud bucket and returns its metadata */
+async function putFile(file){
+  await authFresh();
+  const id=uid();
+  const path=id+'/'+safeName(file.name);
+  const r=await fetch(stUrl(BUCKET+'/'+path),{method:'POST',
+    headers:sbHeaders({'Content-Type':file.type||'application/octet-stream','x-upsert':'true'}),body:file});
+  if(!r.ok){
+    let msg='';try{const j=await r.json();msg=j.message||j.error||''}catch(e){}
+    throw new Error(msg||('upload failed ('+r.status+')'));
+  }
+  return {id,path,name:file.name,type:file.type||'',size:file.size};
+}
+/* returns {url} for a cloud file, or {blob} for an old device-only file, or null */
+async function getFile(meta){
+  const m=typeof meta==='string'?{id:meta}:(meta||{});
+  if(m.path)return {url:stPublic(m.path)};
+  const old=await getLocalFile(m.id);
+  return old?{blob:old.blob}:null;
 }
 async function delFiles(metas){
   try{
-    const d=await idb();
-    (metas||[]).forEach(m=>{d.transaction('files','readwrite').objectStore('files').delete(m.id)});
-  }catch(e){}
+    const paths=(metas||[]).map(m=>m&&m.path).filter(Boolean);
+    if(!paths.length)return;
+    await authFresh();
+    await fetch(stUrl(BUCKET),{method:'DELETE',headers:sbHeaders(),body:JSON.stringify({prefixes:paths})});
+  }catch(e){console.error(e)}
 }
 async function saveFiles(fileList,imagesOnly){
-  const out=[];
-  for(const f of Array.from(fileList||[])){
+  const arr=Array.from(fileList||[]);
+  for(const f of arr){
     if(f.size>MAX_MB*1048576){toast(f.name+' is larger than '+MAX_MB+' MB.',true);return null}
     if(imagesOnly&&!f.type.startsWith('image/')){toast('Please choose an image file.',true);return null}
-    try{out.push(await putFile(f))}catch(e){toast('Could not store file: '+e.message,true);return null}
+  }
+  const out=[];
+  try{
+    for(let i=0;i<arr.length;i++){
+      toast('Uploading '+arr[i].name+' ('+(i+1)+' of '+arr.length+')...');
+      out.push(await putFile(arr[i]));
+    }
+  }catch(e){
+    console.error(e);
+    delFiles(out);
+    toast('Could not upload the file: '+e.message,true);
+    return null;
   }
   return out;
 }
@@ -580,11 +604,16 @@ const EXT_TYPES={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'im
 const guessType=(t,n)=>t||EXT_TYPES[((n||'').split('.').pop()||'').toLowerCase()]||'application/octet-stream';
 const VIEWABLE=/^(application\/pdf|image\/(png|jpe?g|gif|webp|bmp)|text\/(plain|html)|audio\/|video\/)/;
 
-async function openFile(id,type,name,forceDownload){
+async function openFile(id,type,name,forceDownload,path){
   type=guessType(type,name);
+  const meta={id,path:path||''};
   if(/^text\/html/.test(type)&&!forceDownload){
-    try{const rec=await getFile(id);if(!rec){toast('File not found on this device.',true);return}
-      const t=await new Response(rec.blob).text();
+    try{
+      const rec=await getFile(meta);
+      if(!rec){toast('File not found. It may have been uploaded before cloud storage was switched on; ask for it to be uploaded again.',true);return}
+      let t;
+      if(rec.url){const r=await fetch(rec.url);if(!r.ok)throw new Error('http '+r.status);t=await r.text()}
+      else t=await new Response(rec.blob).text();
       showModal(`<h3>${esc(name)}</h3><iframe class="frame" sandbox="allow-scripts allow-forms allow-modals" srcdoc="${esc(t)}"></iframe>`)}
     catch(err){toast('Could not open file.',true)}
     return;
@@ -596,16 +625,21 @@ async function openFile(id,type,name,forceDownload){
     if(!w){toast('Pop-up blocked. Allow pop-ups for this page and try again.',true);return}
   }
   try{
-    const rec=await getFile(id);
-    if(!rec){if(w)w.close();toast('File not found on this device.',true);return}
-    const url=URL.createObjectURL(new Blob([rec.blob],{type}));
+    const rec=await getFile(meta);
+    if(!rec){if(w)w.close();toast('File not found. It may have been uploaded before cloud storage was switched on; ask for it to be uploaded again.',true);return}
+    if(rec.url&&viewable){w.location.href=rec.url;return}
+    let url,temp=false;
+    if(rec.url){
+      const r=await fetch(rec.url);if(!r.ok)throw new Error('http '+r.status);
+      url=URL.createObjectURL(await r.blob());temp=true;
+    }else{url=URL.createObjectURL(new Blob([rec.blob],{type}));temp=true}
     if(viewable){w.location.href=url}
     else{
       const a=document.createElement('a');
       a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
       toast('Downloading '+name);
     }
-    setTimeout(()=>URL.revokeObjectURL(url),180000);
+    if(temp)setTimeout(()=>URL.revokeObjectURL(url),180000);
   }catch(e){if(w)w.close();toast('Could not open file.',true)}
 }
 const fileIcon=n=>{
@@ -617,8 +651,8 @@ const fileIcon=n=>{
 function fileBtns(files){
   if(!files||!files.length)return '<span class="mut small">No file attached</span>';
   return files.map(f=>`<span class="chip">${fileIcon(f.name)} ${esc(f.name)} <small>${fmtSize(f.size)}</small>
-    <button type="button" class="btn sm o" data-act="open" data-fid="${f.id}" data-type="${esc(f.type)}" data-name="${esc(f.name)}">Open</button>
-    <button type="button" class="btn sm" data-act="download" data-fid="${f.id}" data-type="${esc(f.type)}" data-name="${esc(f.name)}">⬇</button>
+    <button type="button" class="btn sm o" data-act="open" data-fid="${f.id}" data-path="${esc(f.path||'')}" data-type="${esc(f.type)}" data-name="${esc(f.name)}">Open</button>
+    <button type="button" class="btn sm" data-act="download" data-fid="${f.id}" data-path="${esc(f.path||'')}" data-type="${esc(f.type)}" data-name="${esc(f.name)}">⬇</button>
   </span>`).join(' ');
 }
 const urlCache={};
@@ -626,7 +660,7 @@ async function hydrate(root){
   for(const img of $$('img[data-fid]',root||document)){
     const id=img.dataset.fid;
     if(urlCache[id]){img.src=urlCache[id];continue}
-    try{const r=await getFile(id);if(r){urlCache[id]=URL.createObjectURL(r.blob);img.src=urlCache[id]}}catch(e){}
+    try{const r=await getFile({id,path:img.dataset.path});if(r){urlCache[id]=r.url||URL.createObjectURL(r.blob);img.src=urlCache[id]}}catch(e){}
   }
 }
 
@@ -654,6 +688,7 @@ const closeModal=()=>{$('#modalRoot').innerHTML=''};
    ========================================================================= */
 const classAssignments=cls=>assignments().filter(a=>a.cls==='All Classes'||a.cls===cls);
 const subOf=(aid,email)=>subs().find(s=>s.aid===aid&&s.email===email);
+const isLate=a=>!!a&&!!a.due&&String(a.due)<todayKey();
 /* ---- score bridge: lets any uploaded HTML test or game send its score back to the site ---- */
 function __bridgeHead(){
   try{localStorage.getItem('x')}catch(e){var m={};try{Object.defineProperty(window,'localStorage',{value:{getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}}}})}catch(_){}}
@@ -984,6 +1019,8 @@ const VIEWS={
 function dashHTML(u){
   const tabs=TABS[u.role]||TABS.student;
   if(!tabs.some(t=>t[0]===state.tab))state.tab=tabs[0][0];
+  const lockedOut=u.role==='student'&&!profileDone(u);
+  if(lockedOut&&state.tab!=='profile'){state.tab='profile';state.edit=true}
   const fn=VIEWS[state.tab]||(()=>'');
   let body='';
   try{body=fn(u)}catch(e){console.error(e);body='<div class="card"><p>Something went wrong on this page.</p></div>'}
@@ -1006,7 +1043,7 @@ function dashHTML(u){
   </div>
   ${bdayHTML}
   <div class="tabs">
-    ${tabs.map(t=>`<button class="tab ${state.tab===t[0]?'on':''}" data-act="tab" data-tab="${t[0]}">${t[2]} ${t[1]}</button>`).join('')}
+    ${tabs.map(t=>{const lk=lockedOut&&t[0]!=='profile';return `<button class="tab ${state.tab===t[0]?'on':''}" ${lk?'style="opacity:.45;cursor:not-allowed" title="Complete your profile to unlock"':''} data-act="tab" data-tab="${t[0]}">${lk?'🔒':t[2]} ${t[1]}</button>`}).join('')}
   </div>
   <div id="dashBody">${body}</div>`;
 }
@@ -1270,7 +1307,7 @@ function studentAssignments(s,ro,category='assignment'){
       ?(sub.score!=null?`<span class="badge ok">Marked ${sub.score}/${a.marks}</span>`:`<span class="badge ok">Submitted ✓</span>`)
       :(overdue?`<span class="badge bad">Overdue</span>`:`<span class="badge warn">Pending</span>`);
     const kindLabel=a.kind==='cbt'?'CBT':a.kind==='theory'?'Theory':'HTML / File';
-    const canSubmit=!ro&&(!sub||(sub.score==null&&a.kind!=='cbt'));
+    const canSubmit=!ro&&!overdue&&(!sub||(sub.score==null&&a.kind!=='cbt'));
 
     let work='';
     if(canSubmit){
@@ -1295,6 +1332,7 @@ function studentAssignments(s,ro,category='assignment'){
       ${a.kind==='cbt'?'':`<div style="margin:8px 0"><b>Task file(s):</b> ${fileBtns(a.files)} ${a.kind==='html'&&!ro&&(a.files||[]).some(f=>/\.html?$/i.test(f.name))&&!(sub&&sub.score!=null)?`<button class="btn sm ok" data-act="open-task" data-id="${a.id}">▶ Do it online</button>`:''}</div>`}
       ${graded}
       ${submittedText}
+      ${!ro&&overdue&&!sub?'<div class="note">⏰ The deadline has passed, so submissions are closed. Please speak to your teacher.</div>':''}
       ${work}
     </div>`;
   }).join('');
@@ -1329,7 +1367,6 @@ function teacherAssignments(u,category='assignment'){
   const mine=(u.role==='admin'?assignments():assignments().filter(a=>a.teacherEmail===u.email)).filter(a=>(a.category||'assignment')===category).slice().reverse();
 
   const form=`<div class="card">
-    <div class="note"><b>Site connection note:</b> This standalone HTML currently stores data in the browser on this device. Cross-device student submissions and shared scores require a server/database connection.</div>
     <h3>${category==='classwork'?'✍️ Create classwork':'📝 Create an assignment'}</h3>
     <p class="mut small">Choose CBT for auto-marked multiple choice, Theory for written answers, or HTML / File for practical work.</p>
     <form data-form="assignment" data-category="${category}">
@@ -1706,7 +1743,8 @@ function profileHTML(u){
   if(u.role==='parent')return parentProfile(u);
 
   // check profile completeness
-  const needsProfile=!u.profile||!u.profile.dob||!u.profile.guardianName||!u.profile.guardianPhone||!u.profile.address;
+  const needsProfile=!profileDone(u);
+  if(needsProfile)state.edit=true;
 
   if(u.profile&&!state.edit){
     return `
@@ -1721,13 +1759,13 @@ function profileHTML(u){
   const p=u.profile||{};
   return `<h2>🪪 My profile</h2>
   <div class="card">
-    <div class="note">${needsProfile?'<b>⚠️ Complete all fields to unlock assignments and results.</b><br>':'Fill in your details and press <b>Save profile</b>.'} Your student ID is created automatically.</div>
+    <div class="note">${needsProfile?'<b>🔒 Complete all fields marked * to unlock your assignments, classwork, results and other pages.</b><br>':'Fill in your details and press <b>Save profile</b>.'} Your student ID is created automatically.</div>
     <form data-form="profile">
       <div class="fgrid">
         <div class="fg"><label>Full name *</label><input name="fullname" value="${esc(u.fullname)}" required></div>
         <div class="fg"><label>Class *</label><select name="cls">${opts(CLASSES,u.cls)}</select></div>
         <div class="fg"><label>Date of birth *</label><input type="date" name="dob" value="${esc(p.dob||'')}" required></div>
-        <div class="fg"><label>Gender *</label><select name="gender">${opts(['Male','Female'],p.gender)}</select></div>
+        <div class="fg"><label>Gender *</label><select name="gender" required><option value="">Choose...</option>${opts(['Male','Female'],p.gender)}</select></div>
         <div class="fg"><label>Country</label><input name="country" value="${esc(p.country||'Nigeria')}"></div>
         <div class="fg"><label>State / region</label><input name="state" value="${esc(p.state||'')}"></div>
         <div class="fg"><label>Parent / guardian name *</label><input name="guardianName" value="${esc(p.guardianName||'')}" required></div>
@@ -1739,7 +1777,7 @@ function profileHTML(u){
       <div class="fg"><label>Passport photograph ${p.photo?'(leave empty to keep current)':''}</label>
         <input type="file" name="photo" accept="image/*"></div>
       <button class="btn" type="submit">💾 Save profile</button>
-      ${u.profile?'<button class="btn o" type="button" data-act="cancel-edit">Cancel</button>':''}
+      ${u.profile&&!needsProfile?'<button class="btn o" type="button" data-act="cancel-edit">Cancel</button>':''}
     </form>
   </div>`;
 }
@@ -1756,7 +1794,7 @@ function profileCard(s){
   return `<div class="card" id="printArea">
     ${isBirthdayToday(p.dob)?`<div class="note" style="background:#fce7f3;border-color:var(--rose)">🎂 <b>Happy Birthday!</b> 🎉</div>`:''}
     <div class="profile-head">
-      <div class="photo">${p.photo?`<img data-fid="${p.photo.id}" alt="Photo" style="width:100%;height:100%;object-fit:cover">`:'🎓'}</div>
+      <div class="photo">${p.photo?`<img data-fid="${p.photo.id}" data-path="${esc(p.photo.path||'')}" alt="Photo" style="width:100%;height:100%;object-fit:cover">`:'🎓'}</div>
       <div><h2 style="margin:0">${esc(s.fullname)}</h2>
         <p class="mut">Sonline Classes · samson online classes</p>
         <span class="badge">${esc(s.cls||'—')}</span></div>
@@ -1851,7 +1889,7 @@ function studentOverview(s,ro){
     ${stat('⭐','Average',avg==null?'—':avg+'%','All marked work')}
     ${stat('🔴','Next live lesson',up[0]?fmtTime(up[0].start):'—',up[0]?esc(up[0].title):'Nothing scheduled')}
   </div>
-  ${!s.profile||!s.profile.dob?`<div class="note">🪪 Your profile is incomplete — assignments and results are locked until you complete it. <button class="btn sm gold" data-act="tab" data-tab="profile" style="margin-left:8px">Complete now</button></div>`:''}
+  ${!profileDone(s)?`<div class="note">🪪 Your profile is incomplete — assignments and results are locked until you complete it. <button class="btn sm gold" data-act="tab" data-tab="profile" style="margin-left:8px">Complete now</button></div>`:''}
   ${soonBirthdays.length?`<div class="card"><h3>🎈 Upcoming birthdays</h3>
     ${soonBirthdays.map(x=>`<div class="rowline"><span>${esc(x.fullname)}</span><span class="badge warn">${fmtDate(x.profile.dob)}</span></div>`).join('')}
   </div>`:''}
@@ -1920,7 +1958,7 @@ A.portal=()=>go(me()?'dashboard':'auth');
 A['go-register']=()=>{state.authMode='register';go('auth')};
 A['go-login']=()=>{state.authMode='login';go('auth')};
 A.logout=()=>{try{fetch(authUrl('logout'),{method:'POST',headers:sbHeaders()})}catch(e){}authSet(null);DB.users=[];SBT.forEach(t=>{DB[t]=[]});state.page='home';state.tab='overview';render();toast('Logged out. See you soon!')};
-A.tab=el=>{state.tab=el.dataset.tab;state.edit=false;render();window.scrollTo({top:0,behavior:'smooth'})};
+A.tab=el=>{const cu=me();if(cu&&cu.role==='student'&&!profileDone(cu)&&el.dataset.tab!=='profile'){toast('Please complete your profile first to unlock this page.',true);return}state.tab=el.dataset.tab;state.edit=false;render();window.scrollTo({top:0,behavior:'smooth'})};
 A.back=()=>{state.cur=null;render()};
 async function copyText(t,msg){
   try{await navigator.clipboard.writeText(t)}
@@ -1933,8 +1971,11 @@ A['ask-score']=()=>{const fr=document.querySelector('iframe.frame');if(fr&&fr.co
 A['open-task']=async el=>{
   const a=assignments().find(x=>x.id===el.dataset.id);if(!a)return;
   const f=(a.files||[]).find(x=>/\.html?$/i.test(x.name));if(!f)return toast('No HTML file on this task.',true);
-  const rec=await getFile(f.id);if(!rec)return toast('Task file not found on this device.',true);
-  state.cur={kind:'task',aid:a.id,html:await new Response(rec.blob).text()};render();window.scrollTo({top:0,behavior:'smooth'});
+  const rec=await getFile(f);if(!rec)return toast('Task file not found. Ask your teacher to upload it again.',true);
+  let html;
+  try{if(rec.url){const r=await fetch(rec.url);if(!r.ok)throw new Error('http '+r.status);html=await r.text()}else html=await new Response(rec.blob).text()}
+  catch(e){return toast('Could not open the task file.',true)}
+  state.cur={kind:'task',aid:a.id,html};render();window.scrollTo({top:0,behavior:'smooth'});
 };
 A['open-lesson']=el=>{state.cur={kind:'lesson',id:el.dataset.id};render();window.scrollTo({top:0,behavior:'smooth'})};
 A['download-lesson']=el=>{
@@ -1946,8 +1987,8 @@ A['download-lesson']=el=>{
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
   toast('HTML file downloaded.');
 };
-A.open=el=>openFile(el.dataset.fid,el.dataset.type,el.dataset.name,false);
-A.download=el=>openFile(el.dataset.fid,el.dataset.type,el.dataset.name,true);
+A.open=el=>openFile(el.dataset.fid,el.dataset.type,el.dataset.name,false,el.dataset.path);
+A.download=el=>openFile(el.dataset.fid,el.dataset.type,el.dataset.name,true,el.dataset.path);
 A['close-modal']=closeModal;
 A['close-modal-bg']=(el,e)=>{if(e.target===el)closeModal()};
 A.prevmonth=()=>{state.calD=new Date(state.calD.getFullYear(),state.calD.getMonth()-1,1);render()};
@@ -2229,7 +2270,7 @@ F.assignment=async f=>{
     kind,questions,files,teacherEmail:u.email,teacherName:u.fullname,
     date:new Date().toISOString()
   });
-  if(!await saveAssignments(list))return;
+  if(!await saveAssignments(list)){delFiles(files);return}
   toast('Assignment published to '+v.cls+'.');
   render();
 };
@@ -2243,7 +2284,7 @@ F.resource=async f=>{
   list.push({id:uid(),title:String(v.title||'').trim(),subject:v.subject,cls:v.cls,
     desc:String(v.desc||'').trim(),files,teacherEmail:u.email,teacherName:u.fullname,
     date:new Date().toISOString()});
-  saveResources(list);
+  if(!await saveResources(list)){delFiles(files);return}
   toast('Resource uploaded.');
   render();
 };
@@ -2253,6 +2294,7 @@ F['submit-cbt']=f=>{
   const aid=f.dataset.aid;
   const a=assignments().find(x=>x.id===aid);
   if(!a||a.kind!=='cbt')return toast('This assessment is no longer available.',true);
+  if(isLate(a))return toast('The deadline has passed. Submissions are closed.',true);
   const fd=new FormData(f);
   const qs=a.questions||[];
   let correct=0;
@@ -2277,6 +2319,7 @@ F['submit-cbt']=f=>{
 F['submit-theory']=async f=>{
   const u=me();
   const aid=f.dataset.aid;
+  if(isLate(assignments().find(x=>x.id===aid)))return toast('The deadline has passed. Submissions are closed.',true);
   const v=Object.fromEntries(new FormData(f));
   let files=[];
   if(f.elements.files&&f.elements.files.files.length){
@@ -2289,8 +2332,9 @@ F['submit-theory']=async f=>{
     name:String(v.studentName||u.fullname).trim(),cls:u.cls,files,
     answerText:String(v.answerText||'').trim(),kind:'theory',
     date:new Date().toISOString(),score:null,feedback:''};
-  if(old){delFiles(old.files);all[all.indexOf(old)]=rec}else all.push(rec);
-  saveSubs(all);
+  if(old)all[all.indexOf(old)]=rec;else all.push(rec);
+  if(!await saveSubs(all)){delFiles(files);return}
+  if(old)delFiles(old.files);
   toast('Answers sent to your teacher for marking.');
   render();
 };
@@ -2298,6 +2342,7 @@ F['submit-theory']=async f=>{
 F['submit-html']=async f=>{
   const u=me();
   const aid=f.dataset.aid;
+  if(isLate(assignments().find(x=>x.id===aid)))return toast('The deadline has passed. Submissions are closed.',true);
   const files=await saveFiles(f.elements.files.files);
   if(!files||!files.length)return;
   const all=subs();
@@ -2306,8 +2351,9 @@ F['submit-html']=async f=>{
     name:String(f.elements.studentName?.value||u.fullname).trim(),cls:u.cls,files,
     note:String(f.elements.note?.value||'').trim(),kind:'html',
     date:new Date().toISOString(),score:null,feedback:''};
-  if(old){delFiles(old.files);all[all.indexOf(old)]=rec}else all.push(rec);
-  saveSubs(all);
+  if(old)all[all.indexOf(old)]=rec;else all.push(rec);
+  if(!await saveSubs(all)){delFiles(files);return}
+  if(old)delFiles(old.files);
   toast('Work submitted successfully.');
   render();
 };
@@ -2373,7 +2419,9 @@ F.profile=async f=>{
     };
   });
   state.edit=false;
-  toast('Profile saved.');
+  const done=profileDone(me());
+  if(done&&state.tab==='profile'&&!u.profile)state.tab='overview';
+  toast(done?'Profile saved. Everything is unlocked.':'Profile saved, but some required fields are still empty.',!done);
   render();
 };
 
